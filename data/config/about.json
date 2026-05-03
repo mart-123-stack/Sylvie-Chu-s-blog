@@ -1,0 +1,34 @@
+{
+  "name": "Sylive Chu",
+  "initials": "SC",
+  "title": "Full Stack Developer",
+  "location": "San Francisco, CA",
+  "bio": "I&apos;m a passionate full-stack developer with over 5 years of experience building web applications. I love creating elegant solutions to complex problems and sharing my knowledge with the community.\n\nWhen I&apos;m not coding, you can find me hiking, reading, or exploring new coffee shops in the city.",
+  "skills": [
+    "JavaScript",
+    "TypeScript",
+    "React",
+    "Next.js",
+    "Node.js",
+    "Python",
+    "PostgreSQL",
+    "Tailwind CSS"
+  ],
+  "experience": [
+    {
+      "title": "Senior Developer",
+      "company": "Tech Company Inc.",
+      "period": "2022 - Present"
+    },
+    {
+      "title": "Full Stack Developer",
+      "company": "Startup XYZ",
+      "period": "2020 - 2022"
+    },
+    {
+      "title": "Junior Developer",
+      "company": "Web Agency ABC",
+      "period": "2019 - 2020"
+    }
+  ]
+}

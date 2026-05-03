@@ -1,0 +1,47 @@
+[
+  {
+    "id": "1",
+    "title": "Mountain View",
+    "category": "Nature"
+  },
+  {
+    "id": "2",
+    "title": "City Lights",
+    "category": "Urban"
+  },
+  {
+    "id": "3",
+    "title": "Ocean Sunset",
+    "category": "Nature"
+  },
+  {
+    "id": "4",
+    "title": "Forest Path",
+    "category": "Nature"
+  },
+  {
+    "id": "5",
+    "title": "Street Art",
+    "category": "Urban"
+  },
+  {
+    "id": "6",
+    "title": "Desert Dunes",
+    "category": "Nature"
+  },
+  {
+    "id": "7",
+    "title": "Architecture",
+    "category": "Urban"
+  },
+  {
+    "id": "8",
+    "title": "Autumn Leaves",
+    "category": "Nature"
+  },
+  {
+    "id": "9",
+    "title": "Night Sky",
+    "category": "Nature"
+  }
+]

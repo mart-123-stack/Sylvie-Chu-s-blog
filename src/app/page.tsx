@@ -6,7 +6,7 @@ export default function Home() {
       <nav className="bg-white dark:bg-gray-800 shadow-md">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">My Blog</h1>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Sylive Chu&apos;s Blog</h1>
             <div className="space-x-6">
               <Link href="/" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition">
                 Home

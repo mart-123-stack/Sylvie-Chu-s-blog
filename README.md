@@ -66,3 +66,74 @@ src/
 - Dark mode toggle
 - SEO optimization
 - RSS feed
+
+## Deployment
+
+### Option 1: Deploy to Vercel (Recommended)
+
+Vercel is the official hosting platform for Next.js and provides free hosting.
+
+#### Method A: Using Vercel CLI
+```bash
+# Install Vercel CLI (if not already installed)
+npm install -g vercel
+
+# Login to Vercel
+vercel login
+
+# Deploy your project
+vercel
+```
+
+#### Method B: Using Vercel Website
+1. Push your code to GitHub
+2. Go to [vercel.com](https://vercel.com)
+3. Click "Add New Project"
+4. Import your GitHub repository
+5. Click "Deploy"
+
+Your site will be live at `https://your-project-name.vercel.app`
+
+### Option 2: Deploy to Netlify
+
+1. Push your code to GitHub
+2. Go to [netlify.com](https://netlify.com)
+3. Click "Add new site" → "Import an existing project"
+4. Connect to GitHub and select your repository
+5. Configure build settings:
+   - Build command: `npm run build`
+   - Publish directory: `.next`
+6. Click "Deploy site"
+
+### Option 3: Deploy to GitHub Pages
+
+1. Push your code to GitHub
+2. Install gh-pages package:
+```bash
+npm install --save-dev gh-pages
+```
+
+3. Add deploy script to package.json:
+```json
+"scripts": {
+  "deploy": "next build && next export && gh-pages -d out"
+}
+```
+
+4. Run deploy command:
+```bash
+npm run deploy
+```
+
+### Push to GitHub
+
+If you haven't pushed your code to GitHub yet:
+
+```bash
+# Create a new repository on GitHub first, then:
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+git branch -M main
+git push -u origin main
+```
+
+Replace `YOUR_USERNAME` and `YOUR_REPO` with your GitHub username and repository name.

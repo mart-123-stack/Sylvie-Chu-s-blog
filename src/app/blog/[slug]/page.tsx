@@ -1,12 +1,20 @@
 import Link from "next/link";
+import { getPostBySlug } from "@/lib/posts";
+import { notFound } from "next/navigation";
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const post = await getPostBySlug(params.slug);
+
+  if (!post) {
+    notFound();
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       <nav className="bg-white dark:bg-gray-800 shadow-md">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">My Blog</h1>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Sylive Chu&apos;s Blog</h1>
             <div className="space-x-6">
               <Link href="/" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition">
                 Home
@@ -32,21 +40,15 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
         
         <article className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
           <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">
-            {params.slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            {post.title}
           </h1>
           <div className="text-gray-500 dark:text-gray-400 mb-6">
-            Published on March 15, 2024
+            Published on {new Date(post.date).toLocaleDateString()} by {post.author}
           </div>
           
           <div className="prose dark:prose-invert max-w-none">
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              This is a sample blog post. In a real application, this content would be fetched from a database or markdown files.
-            </p>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </p>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            <p className="text-gray-700 dark:text-gray-300 mb-4 whitespace-pre-wrap">
+              {post.content}
             </p>
           </div>
 
