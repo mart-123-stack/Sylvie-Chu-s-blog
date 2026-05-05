@@ -2,9 +2,13 @@ import { NextResponse } from 'next/server';
 import { getPosts, createPost } from '@/lib/posts';
 import { isAuthenticated } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const posts = await getPosts();
-  return NextResponse.json(posts);
+  return NextResponse.json(posts, {
+    headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+  });
 }
 
 export async function POST(request: Request) {

@@ -2,9 +2,13 @@ import { NextResponse } from 'next/server';
 import { getPhotos, savePhotos } from '@/lib/config';
 import { isAuthenticated } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const photos = await getPhotos();
-  return NextResponse.json(photos);
+  return NextResponse.json(photos, {
+    headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+  });
 }
 
 export async function PUT(request: Request) {

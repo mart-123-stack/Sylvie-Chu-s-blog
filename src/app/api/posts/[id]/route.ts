@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { updatePost, deletePost } from '@/lib/posts';
 import { isAuthenticated } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function PUT(
   request: Request,
   { params }: { params: { id: string } }

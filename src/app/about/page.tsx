@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { getAboutConfig } from "@/lib/config";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function AboutPage() {
   const config = await getAboutConfig();
 

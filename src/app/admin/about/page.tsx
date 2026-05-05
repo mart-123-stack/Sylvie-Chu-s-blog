@@ -70,10 +70,16 @@ export default function AdminAboutPage() {
       if (response.ok) {
         router.push('/admin');
       } else {
-        setError('Failed to save config');
+        let errorMsg = `Failed to save config (status: ${response.status})`;
+        try {
+          const data = await response.json();
+          errorMsg = data.error || errorMsg;
+        } catch {}
+        setError(errorMsg);
       }
     } catch (err) {
-      setError('Failed to save config');
+      console.error('Save config error:', err);
+      setError(`Network error: ${err instanceof Error ? err.message : 'Unknown'}. Token: ${token ? 'exists' : 'missing'}`);
     } finally {
       setLoading(false);
     }

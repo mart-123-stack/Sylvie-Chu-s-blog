@@ -79,7 +79,7 @@ export async function getAboutConfig(): Promise<AboutConfig> {
 
 export async function saveAboutConfig(config: AboutConfig): Promise<boolean> {
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('about_config')
       .update({
         name: config.name,
@@ -90,9 +90,14 @@ export async function saveAboutConfig(config: AboutConfig): Promise<boolean> {
         skills: config.skills,
         experience: config.experience,
       })
-      .eq('id', 1);
+      .eq('id', 1)
+      .select();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error saving about config:', error);
+      throw error;
+    }
+    console.log('About config saved successfully:', data);
     return true;
   } catch (error) {
     console.error('Error saving about config:', error);
@@ -133,10 +138,13 @@ export async function getPhotos(): Promise<Photo[]> {
 export async function savePhotos(photos: Photo[]): Promise<boolean> {
   try {
     // Delete all existing photos
-    await supabase.from('photos').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+    const { error: deleteError } = await supabase.from('photos').delete().neq('id', '');
+    if (deleteError) {
+      console.error('Supabase error deleting photos:', deleteError);
+    }
     
     // Insert new photos
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('photos')
       .insert(
         photos.map(photo => ({
@@ -145,9 +153,14 @@ export async function savePhotos(photos: Photo[]): Promise<boolean> {
           category: photo.category,
           url: photo.url,
         }))
-      );
+      )
+      .select();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error saving photos:', error);
+      throw error;
+    }
+    console.log('Photos saved successfully:', data);
     return true;
   } catch (error) {
     console.error('Error saving photos:', error);

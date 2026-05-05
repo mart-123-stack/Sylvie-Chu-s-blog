@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     if (verifyPassword(password)) {
       return NextResponse.json({ 
         success: true, 
-        token: process.env.ADMIN_PASSWORD || 'admin123' 
+        token: process.env.ADMIN_PASSWORD || '@smartz3950'
       });
     }
     
