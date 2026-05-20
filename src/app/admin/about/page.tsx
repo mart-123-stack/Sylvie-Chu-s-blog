@@ -121,14 +121,14 @@ export default function AdminAboutPage() {
 
   if (fetching) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-sky-50 to-blue-50 dark:from-sky-950 dark:to-indigo-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-indigo-950 flex items-center justify-center">
         <p className="text-sky-900 dark:text-white">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-blue-50 dark:from-sky-950 dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-indigo-950">
       <nav className="bg-white dark:bg-sky-950 shadow-sm border-b border-sky-100 dark:border-sky-900">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">

@@ -8,7 +8,7 @@ export default async function GalleryPage() {
   const photos = await getPhotos();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-blue-50 dark:from-sky-950 dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-indigo-950">
       <nav className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-sky-100 dark:bg-sky-950/80 dark:border-sky-900">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">

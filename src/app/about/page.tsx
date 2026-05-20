@@ -8,7 +8,7 @@ export default async function AboutPage() {
   const config = await getAboutConfig();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-b from-sky-100 via-blue-100 to-indigo-100">
       <nav className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-sky-100">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
