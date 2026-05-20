@@ -2,13 +2,14 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 let supabase: any;
+let supabaseAdmin: any;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase credentials not found. Database features will be disabled.');
 
-  // Minimal safe mock that supports the chained API used in src/lib/posts.ts
   const mockChain: any = {
     select() { return this; },
     order() { return Promise.resolve({ data: [], error: null }); },
@@ -28,4 +29,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   supabase = createClient(supabaseUrl, supabaseAnonKey);
 }
 
-export { supabase };
+// Admin client for server-side writes (bypasses RLS)
+if (supabaseUrl && serviceRoleKey) {
+  supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+}
+
+export { supabase, supabaseAdmin };

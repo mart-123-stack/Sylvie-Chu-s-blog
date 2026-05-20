@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { supabase } from './supabase';
+import { supabase, supabaseAdmin } from './supabase';
 
 export interface AboutConfig {
   name: string;
@@ -72,8 +72,12 @@ const defaultPhotos: Photo[] = [
   { id: '9', title: 'Night Sky', category: 'Nature' },
 ];
 
+// Use admin client for writes when available (bypasses RLS on server side)
+function writeClient() {
+  return supabaseAdmin || supabase;
+}
+
 export async function getAboutConfig(): Promise<AboutConfig> {
-  // Try Supabase first
   try {
     const { data, error } = await supabase
       .from('about_config')
@@ -96,7 +100,6 @@ export async function getAboutConfig(): Promise<AboutConfig> {
     console.error('Supabase read failed:', error);
   }
 
-  // Fallback: read from local file
   const local = await readLocalFile<AboutConfig>(aboutConfigPath);
   if (local) return local;
 
@@ -104,12 +107,12 @@ export async function getAboutConfig(): Promise<AboutConfig> {
 }
 
 export async function saveAboutConfig(config: AboutConfig): Promise<boolean> {
-  // Always save to local file as primary persistence
   const localSuccess = await writeLocalFile(aboutConfigPath, config);
 
-  // Also try Supabase if available
+  let supabaseSuccess = false;
   try {
-    const { error } = await supabase
+    const client = writeClient();
+    const { error } = await client
       .from('about_config')
       .update({
         name: config.name,
@@ -127,16 +130,16 @@ export async function saveAboutConfig(config: AboutConfig): Promise<boolean> {
       console.error('Supabase error saving about config:', error);
     } else {
       console.log('About config saved to Supabase successfully');
+      supabaseSuccess = true;
     }
   } catch (error) {
     console.error('Supabase save failed:', error);
   }
 
-  return localSuccess;
+  return localSuccess || supabaseSuccess;
 }
 
 export async function getPhotos(): Promise<Photo[]> {
-  // Try Supabase first
   try {
     const { data, error } = await supabase
       .from('photos')
@@ -155,7 +158,6 @@ export async function getPhotos(): Promise<Photo[]> {
     console.error('Supabase photos read failed:', error);
   }
 
-  // Fallback: read from local file
   const local = await readLocalFile<Photo[]>(photosConfigPath);
   if (local) return local;
 
@@ -163,17 +165,17 @@ export async function getPhotos(): Promise<Photo[]> {
 }
 
 export async function savePhotos(photos: Photo[]): Promise<boolean> {
-  // Always save to local file as primary persistence
   const localSuccess = await writeLocalFile(photosConfigPath, photos);
 
-  // Also try Supabase if available
+  let supabaseSuccess = false;
   try {
-    const { error: deleteError } = await supabase.from('photos').delete().neq('id', '');
+    const client = writeClient();
+    const { error: deleteError } = await client.from('photos').delete().neq('id', '');
     if (deleteError) {
       console.error('Supabase error deleting photos:', deleteError);
     }
 
-    const { error } = await supabase
+    const { error } = await client
       .from('photos')
       .insert(
         photos.map(photo => ({
@@ -189,10 +191,11 @@ export async function savePhotos(photos: Photo[]): Promise<boolean> {
       console.error('Supabase error saving photos:', error);
     } else {
       console.log('Photos saved to Supabase successfully');
+      supabaseSuccess = true;
     }
   } catch (error) {
     console.error('Supabase photos save failed:', error);
   }
 
-  return localSuccess;
+  return localSuccess || supabaseSuccess;
 }

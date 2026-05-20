@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { supabase } from './supabase';
+import { supabase, supabaseAdmin } from './supabase';
 
 export interface Post {
   id: string;
@@ -34,8 +34,12 @@ async function writeLocalPosts(posts: Post[]): Promise<boolean> {
   }
 }
 
+// Use admin client for writes when available (bypasses RLS on server side)
+function writeClient() {
+  return supabaseAdmin || supabase;
+}
+
 export async function getPosts(): Promise<Post[]> {
-  // Try Supabase first
   try {
     const { data, error } = await supabase
       .from('posts')
@@ -58,12 +62,10 @@ export async function getPosts(): Promise<Post[]> {
     console.error('Supabase posts read failed:', error);
   }
 
-  // Fallback: read from local file
   return readLocalPosts();
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
-  // Try Supabase first
   try {
     const { data, error } = await supabase
       .from('posts')
@@ -87,7 +89,6 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     console.error('Supabase post read failed:', error);
   }
 
-  // Fallback: find in local file
   const posts = await readLocalPosts();
   return posts.find(p => p.slug === slug) || null;
 }
@@ -99,14 +100,13 @@ export async function createPost(post: Omit<Post, 'id' | 'date'>): Promise<Post>
     date: new Date().toISOString(),
   };
 
-  // Always save locally first
   const posts = await readLocalPosts();
   posts.unshift(newPost);
   await writeLocalPosts(posts);
 
-  // Try Supabase
   try {
-    const { data, error } = await supabase
+    const client = writeClient();
+    const { data, error } = await client
       .from('posts')
       .insert({
         title: post.title,
@@ -139,7 +139,6 @@ export async function createPost(post: Omit<Post, 'id' | 'date'>): Promise<Post>
 }
 
 export async function updatePost(id: string, updates: Partial<Post>): Promise<Post | null> {
-  // Always update locally first
   const posts = await readLocalPosts();
   const index = posts.findIndex(p => p.id === id);
   if (index === -1) return null;
@@ -147,9 +146,9 @@ export async function updatePost(id: string, updates: Partial<Post>): Promise<Po
   posts[index] = { ...posts[index], ...updates };
   await writeLocalPosts(posts);
 
-  // Try Supabase
   try {
-    const { data, error } = await supabase
+    const client = writeClient();
+    const { data, error } = await client
       .from('posts')
       .update({
         title: updates.title,
@@ -183,15 +182,14 @@ export async function updatePost(id: string, updates: Partial<Post>): Promise<Po
 }
 
 export async function deletePost(id: string): Promise<boolean> {
-  // Always delete locally first
   const posts = await readLocalPosts();
   const filtered = posts.filter(p => p.id !== id);
   if (filtered.length === posts.length) return false;
   await writeLocalPosts(filtered);
 
-  // Try Supabase
   try {
-    const { error } = await supabase.from('posts').delete().eq('id', id);
+    const client = writeClient();
+    const { error } = await client.from('posts').delete().eq('id', id);
     if (error) {
       console.error('Supabase post delete failed:', error);
     }
