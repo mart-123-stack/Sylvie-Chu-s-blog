@@ -41,7 +41,7 @@ export default function AdminAboutPage() {
 
   const fetchConfig = async () => {
     try {
-      const response = await fetch('/api/config/about');
+      const response = await fetch(`/api/config/about?t=${Date.now()}`);
       const data = await response.json();
       setFormData(data);
     } catch (err) {
@@ -68,7 +68,8 @@ export default function AdminAboutPage() {
       });
 
       if (response.ok) {
-        router.push('/admin');
+        setError('');
+        alert('Changes saved successfully!');
       } else {
         let errorMsg = `Failed to save config (status: ${response.status})`;
         try {
@@ -120,21 +121,21 @@ export default function AdminAboutPage() {
 
   if (fetching) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+      <div className="min-h-screen bg-gradient-to-b from-sky-50 to-blue-50 dark:from-sky-950 dark:to-indigo-950 flex items-center justify-center">
+        <p className="text-sky-900 dark:text-white">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <nav className="bg-white dark:bg-gray-800 shadow-md">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-blue-50 dark:from-sky-950 dark:to-indigo-950">
+      <nav className="bg-white dark:bg-sky-950 shadow-sm border-b border-sky-100 dark:border-sky-900">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Edit About Page</h1>
+            <h1 className="text-2xl font-bold text-sky-900 dark:text-white">Edit About Page</h1>
             <Link
               href="/admin"
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+              className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition"
             >
               ← Back
             </Link>
@@ -143,7 +144,7 @@ export default function AdminAboutPage() {
       </nav>
 
       <main className="max-w-4xl mx-auto px-4 py-12">
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-sky-950 rounded-lg shadow-lg shadow-sky-100 dark:shadow-sky-900/20 p-8 border border-sky-100 dark:border-sky-900">
           {error && <p className="text-red-500 mb-4">{error}</p>}
 
           <div className="mb-6">
@@ -154,7 +155,7 @@ export default function AdminAboutPage() {
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               required
             />
           </div>
@@ -167,7 +168,7 @@ export default function AdminAboutPage() {
               type="text"
               value={formData.initials}
               onChange={(e) => setFormData({ ...formData, initials: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               required
             />
           </div>
@@ -180,7 +181,7 @@ export default function AdminAboutPage() {
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               required
             />
           </div>
@@ -193,7 +194,7 @@ export default function AdminAboutPage() {
               type="text"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               required
             />
           </div>
@@ -205,7 +206,7 @@ export default function AdminAboutPage() {
             <textarea
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               rows={5}
               required
             />
@@ -221,7 +222,7 @@ export default function AdminAboutPage() {
                   type="text"
                   value={skill}
                   onChange={(e) => updateSkill(index, e.target.value)}
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500"
                 />
                 <button
                   type="button"
@@ -235,7 +236,7 @@ export default function AdminAboutPage() {
             <button
               type="button"
               onClick={addSkill}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition"
             >
               Add Skill
             </button>
@@ -253,21 +254,21 @@ export default function AdminAboutPage() {
                     placeholder="Title"
                     value={exp.title}
                     onChange={(e) => updateExperience(index, 'title', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 mb-2"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 mb-2"
                   />
                   <input
                     type="text"
                     placeholder="Company"
                     value={exp.company}
                     onChange={(e) => updateExperience(index, 'company', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 mb-2"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 mb-2"
                   />
                   <input
                     type="text"
                     placeholder="Period (e.g., 2020 - 2022)"
                     value={exp.period}
                     onChange={(e) => updateExperience(index, 'period', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500"
                   />
                 </div>
                 <button
@@ -282,7 +283,7 @@ export default function AdminAboutPage() {
             <button
               type="button"
               onClick={addExperience}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition"
             >
               Add Experience
             </button>
@@ -291,7 +292,7 @@ export default function AdminAboutPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            className="w-full px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition disabled:opacity-50"
           >
             {loading ? 'Saving...' : 'Save Changes'}
           </button>

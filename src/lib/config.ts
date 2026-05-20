@@ -1,3 +1,5 @@
+import { promises as fs } from 'fs';
+import path from 'path';
 import { supabase } from './supabase';
 
 export interface AboutConfig {
@@ -19,6 +21,29 @@ export interface Photo {
   title: string;
   category: string;
   url?: string;
+}
+
+const dataDir = path.join(process.cwd(), 'data', 'config');
+const aboutConfigPath = path.join(dataDir, 'about.json');
+const photosConfigPath = path.join(dataDir, 'photos.json');
+
+async function readLocalFile<T>(filePath: string): Promise<T | null> {
+  try {
+    const data = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(data);
+  } catch {
+    return null;
+  }
+}
+
+async function writeLocalFile<T>(filePath: string, data: T): Promise<boolean> {
+  try {
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+    return true;
+  } catch (error) {
+    console.error(`Error writing to ${filePath}:`, error);
+    return false;
+  }
 }
 
 const defaultAboutConfig: AboutConfig = {
@@ -48,38 +73,43 @@ const defaultPhotos: Photo[] = [
 ];
 
 export async function getAboutConfig(): Promise<AboutConfig> {
-  // Return default during build time
-  if (typeof window === 'undefined' && process.env.NEXT_PUBLIC_SUPABASE_URL === '') {
-    return defaultAboutConfig;
-  }
-
+  // Try Supabase first
   try {
     const { data, error } = await supabase
       .from('about_config')
       .select('*')
       .eq('id', 1)
       .single();
-    
-    if (error) throw error;
-    
-    return {
-      name: data.name,
-      initials: data.initials,
-      title: data.title,
-      location: data.location,
-      bio: data.bio,
-      skills: data.skills,
-      experience: data.experience,
-    };
+
+    if (!error && data) {
+      return {
+        name: data.name,
+        initials: data.initials,
+        title: data.title,
+        location: data.location,
+        bio: data.bio,
+        skills: data.skills,
+        experience: data.experience,
+      };
+    }
   } catch (error) {
-    console.error('Error reading about config:', error);
-    return defaultAboutConfig;
+    console.error('Supabase read failed:', error);
   }
+
+  // Fallback: read from local file
+  const local = await readLocalFile<AboutConfig>(aboutConfigPath);
+  if (local) return local;
+
+  return defaultAboutConfig;
 }
 
 export async function saveAboutConfig(config: AboutConfig): Promise<boolean> {
+  // Always save to local file as primary persistence
+  const localSuccess = await writeLocalFile(aboutConfigPath, config);
+
+  // Also try Supabase if available
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('about_config')
       .update({
         name: config.name,
@@ -92,59 +122,58 @@ export async function saveAboutConfig(config: AboutConfig): Promise<boolean> {
       })
       .eq('id', 1)
       .select();
-    
+
     if (error) {
       console.error('Supabase error saving about config:', error);
-      throw error;
+    } else {
+      console.log('About config saved to Supabase successfully');
     }
-    console.log('About config saved successfully:', data);
-    return true;
   } catch (error) {
-    console.error('Error saving about config:', error);
-    return false;
+    console.error('Supabase save failed:', error);
   }
+
+  return localSuccess;
 }
 
 export async function getPhotos(): Promise<Photo[]> {
-  // Return default during build time
-  if (typeof window === 'undefined' && process.env.NEXT_PUBLIC_SUPABASE_URL === '') {
-    return defaultPhotos;
-  }
-
+  // Try Supabase first
   try {
     const { data, error } = await supabase
       .from('photos')
       .select('*')
       .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    
-    if (!data || !Array.isArray(data)) {
-      return defaultPhotos;
+
+    if (!error && data && Array.isArray(data)) {
+      return data.map(photo => ({
+        id: photo.id,
+        title: photo.title,
+        category: photo.category,
+        url: photo.url,
+      }));
     }
-    
-    return data.map(photo => ({
-      id: photo.id,
-      title: photo.title,
-      category: photo.category,
-      url: photo.url,
-    }));
   } catch (error) {
-    console.error('Error reading photos:', error);
-    return defaultPhotos;
+    console.error('Supabase photos read failed:', error);
   }
+
+  // Fallback: read from local file
+  const local = await readLocalFile<Photo[]>(photosConfigPath);
+  if (local) return local;
+
+  return defaultPhotos;
 }
 
 export async function savePhotos(photos: Photo[]): Promise<boolean> {
+  // Always save to local file as primary persistence
+  const localSuccess = await writeLocalFile(photosConfigPath, photos);
+
+  // Also try Supabase if available
   try {
-    // Delete all existing photos
     const { error: deleteError } = await supabase.from('photos').delete().neq('id', '');
     if (deleteError) {
       console.error('Supabase error deleting photos:', deleteError);
     }
-    
-    // Insert new photos
-    const { data, error } = await supabase
+
+    const { error } = await supabase
       .from('photos')
       .insert(
         photos.map(photo => ({
@@ -155,15 +184,15 @@ export async function savePhotos(photos: Photo[]): Promise<boolean> {
         }))
       )
       .select();
-    
+
     if (error) {
       console.error('Supabase error saving photos:', error);
-      throw error;
+    } else {
+      console.log('Photos saved to Supabase successfully');
     }
-    console.log('Photos saved successfully:', data);
-    return true;
   } catch (error) {
-    console.error('Error saving photos:', error);
-    return false;
+    console.error('Supabase photos save failed:', error);
   }
+
+  return localSuccess;
 }

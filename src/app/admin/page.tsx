@@ -31,7 +31,7 @@ export default function AdminPage() {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch('/api/posts');
+      const response = await fetch(`/api/posts?t=${Date.now()}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -97,9 +97,9 @@ export default function AdminPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 w-full max-w-md">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Admin Login</h1>
+      <div className="min-h-screen bg-gradient-to-b from-sky-50 to-blue-50 dark:from-sky-950 dark:to-indigo-950 flex items-center justify-center">
+        <div className="bg-white dark:bg-sky-950 rounded-lg shadow-lg shadow-sky-100 dark:shadow-sky-900/20 p-8 w-full max-w-md border border-sky-100 dark:border-sky-900">
+          <h1 className="text-2xl font-bold text-sky-900 dark:text-white mb-6">Admin Login</h1>
           <form onSubmit={handleLogin}>
             <div className="mb-4">
               <label className="block text-gray-700 dark:text-gray-300 mb-2">Password</label>
@@ -107,7 +107,7 @@ export default function AdminPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                 required
               />
             </div>
@@ -115,12 +115,12 @@ export default function AdminPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+              className="w-full px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition disabled:opacity-50"
             >
               {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
-          <Link href="/" className="block mt-4 text-center text-blue-600 dark:text-blue-400 hover:underline">
+          <Link href="/" className="block mt-4 text-center text-sky-600 dark:text-sky-400 hover:underline">
             ← Back to Home
           </Link>
         </div>
@@ -129,27 +129,27 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <nav className="bg-white dark:bg-gray-800 shadow-md">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-blue-50 dark:from-sky-950 dark:to-indigo-950">
+      <nav className="bg-white dark:bg-sky-950 shadow-sm border-b border-sky-100 dark:border-sky-900">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Admin Dashboard</h1>
+            <h1 className="text-2xl font-bold text-sky-900 dark:text-white">Admin Dashboard</h1>
             <div className="space-x-4">
               <Link
                 href="/admin/new"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition"
               >
                 New Post
               </Link>
               <Link
                 href="/admin/about"
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition"
               >
                 Edit About
               </Link>
               <Link
                 href="/admin/gallery"
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition"
               >
                 Manage Gallery
               </Link>
@@ -165,18 +165,18 @@ export default function AdminPage() {
       </nav>
 
       <main className="max-w-6xl mx-auto px-4 py-12">
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">Manage Posts</h2>
-        
+        <h2 className="text-3xl font-bold text-sky-900 dark:text-white mb-8">Manage Posts</h2>
+
         {error && <p className="text-red-500 mb-4">{error}</p>}
 
         <div className="space-y-4">
           {posts.map((post) => (
             <div
               key={post.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 flex justify-between items-center"
+              className="bg-white dark:bg-sky-950 rounded-lg shadow-lg shadow-sky-100 dark:shadow-sky-900/20 p-6 border border-sky-100 dark:border-sky-900 flex justify-between items-center"
             >
               <div>
-                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold text-sky-900 dark:text-white mb-2">
                   {post.title}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
@@ -195,7 +195,7 @@ export default function AdminPage() {
               <div className="space-x-2">
                 <Link
                   href={`/admin/edit/${post.id}`}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition"
                 >
                   Edit
                 </Link>
@@ -210,7 +210,7 @@ export default function AdminPage() {
           ))}
 
           {posts.length === 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+            <div className="bg-white dark:bg-sky-950 rounded-lg shadow-lg shadow-sky-100 dark:shadow-sky-900/20 p-8 text-center border border-sky-100 dark:border-sky-900">
               <p className="text-gray-600 dark:text-gray-300">No posts yet. Create your first post!</p>
             </div>
           )}

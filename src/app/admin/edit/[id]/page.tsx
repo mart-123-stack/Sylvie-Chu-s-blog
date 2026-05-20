@@ -35,10 +35,10 @@ export default function EditPostPage() {
 
   const fetchPost = async () => {
     try {
-      const response = await fetch('/api/posts');
+      const response = await fetch(`/api/posts?t=${Date.now()}`);
       const posts: Post[] = await response.json();
       const post = posts.find(p => p.id === params.id);
-      
+
       if (post) {
         setFormData({
           title: post.title,
@@ -93,21 +93,21 @@ export default function EditPostPage() {
 
   if (fetching) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+      <div className="min-h-screen bg-gradient-to-b from-sky-50 to-blue-50 dark:from-sky-950 dark:to-indigo-950 flex items-center justify-center">
+        <p className="text-sky-900 dark:text-white">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-      <nav className="bg-white dark:bg-gray-800 shadow-md">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-blue-50 dark:from-sky-950 dark:to-indigo-950">
+      <nav className="bg-white dark:bg-sky-950 shadow-sm border-b border-sky-100 dark:border-sky-900">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Edit Post</h1>
+            <h1 className="text-2xl font-bold text-sky-900 dark:text-white">Edit Post</h1>
             <Link
               href="/admin"
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+              className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition"
             >
               ← Back
             </Link>
@@ -116,7 +116,7 @@ export default function EditPostPage() {
       </nav>
 
       <main className="max-w-4xl mx-auto px-4 py-12">
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-sky-950 rounded-lg shadow-lg shadow-sky-100 dark:shadow-sky-900/20 p-8 border border-sky-100 dark:border-sky-900">
           {error && <p className="text-red-500 mb-4">{error}</p>}
 
           <div className="mb-6">
@@ -127,7 +127,7 @@ export default function EditPostPage() {
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               required
             />
           </div>
@@ -139,7 +139,7 @@ export default function EditPostPage() {
             <textarea
               value={formData.excerpt}
               onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               rows={3}
               required
             />
@@ -152,7 +152,7 @@ export default function EditPostPage() {
             <textarea
               value={formData.content}
               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
               rows={15}
               required
             />
@@ -173,7 +173,7 @@ export default function EditPostPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            className="w-full px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition disabled:opacity-50"
           >
             {loading ? 'Updating...' : 'Update Post'}
           </button>
