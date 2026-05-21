@@ -9,19 +9,6 @@ export default async function BlogPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 via-blue-100 to-indigo-100">
-      <nav className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-sky-100">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-sky-900">Sylive Chu&apos;s Blog</h1>
-            <div className="space-x-6">
-              <Link href="/" className="text-foreground/70 hover:text-sky-700 transition">Home</Link>
-              <Link href="/blog" className="text-foreground/70 hover:text-sky-700 transition">Blog</Link>
-              <Link href="/about" className="text-foreground/70 hover:text-sky-700 transition">About</Link>
-              <Link href="/gallery" className="text-foreground/70 hover:text-sky-700 transition">Gallery</Link>
-            </div>
-          </div>
-        </div>
-      </nav>
 
       <main className="max-w-6xl mx-auto px-4 py-12">
         <h2 className="text-4xl font-bold text-sky-900 mb-8">Blog Posts</h2>

@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { supabase, supabaseAdmin } from './supabase';
+import { query } from './db';
 
 export interface Post {
   id: string;
@@ -34,20 +34,14 @@ async function writeLocalPosts(posts: Post[]): Promise<boolean> {
   }
 }
 
-// Use admin client for writes when available (bypasses RLS on server side)
-function writeClient() {
-  return supabaseAdmin || supabase;
-}
-
 export async function getPosts(): Promise<Post[]> {
   try {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const result = await query(
+      'SELECT * FROM posts ORDER BY created_at DESC'
+    );
 
-    if (!error && data && Array.isArray(data)) {
-      return data.map(post => ({
+    if (result.rows && result.rows.length > 0) {
+      return result.rows.map(post => ({
         id: post.id,
         title: post.title,
         content: post.content,
@@ -59,7 +53,7 @@ export async function getPosts(): Promise<Post[]> {
       }));
     }
   } catch (error) {
-    console.error('Supabase posts read failed:', error);
+    console.error('DB posts read failed:', error);
   }
 
   return readLocalPosts();
@@ -67,26 +61,26 @@ export async function getPosts(): Promise<Post[]> {
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
   try {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-      .eq('slug', slug)
-      .single();
+    const result = await query(
+      'SELECT * FROM posts WHERE slug = $1 LIMIT 1',
+      [slug]
+    );
 
-    if (!error && data) {
+    if (result.rows && result.rows.length > 0) {
+      const post = result.rows[0];
       return {
-        id: data.id,
-        title: data.title,
-        content: data.content,
-        excerpt: data.excerpt,
-        author: data.author,
-        date: data.created_at,
-        slug: data.slug,
-        published: data.published,
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        excerpt: post.excerpt,
+        author: post.author,
+        date: post.created_at,
+        slug: post.slug,
+        published: post.published,
       };
     }
   } catch (error) {
-    console.error('Supabase post read failed:', error);
+    console.error('DB post read failed:', error);
   }
 
   const posts = await readLocalPosts();
@@ -105,21 +99,15 @@ export async function createPost(post: Omit<Post, 'id' | 'date'>): Promise<Post>
   await writeLocalPosts(posts);
 
   try {
-    const client = writeClient();
-    const { data, error } = await client
-      .from('posts')
-      .insert({
-        title: post.title,
-        content: post.content,
-        excerpt: post.excerpt,
-        author: post.author,
-        slug: post.slug,
-        published: post.published,
-      })
-      .select()
-      .single();
+    const result = await query(
+      `INSERT INTO posts (id, title, content, excerpt, author, slug, published)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
+      [newPost.id, post.title, post.content, post.excerpt, post.author, post.slug, post.published]
+    );
 
-    if (!error && data) {
+    if (result.rows && result.rows.length > 0) {
+      const data = result.rows[0];
       return {
         id: data.id,
         title: data.title,
@@ -132,37 +120,62 @@ export async function createPost(post: Omit<Post, 'id' | 'date'>): Promise<Post>
       };
     }
   } catch (error) {
-    console.error('Supabase post create failed:', error);
+    console.error('DB post create failed:', error);
   }
 
   return newPost;
 }
 
 export async function updatePost(id: string, updates: Partial<Post>): Promise<Post | null> {
-  const posts = await readLocalPosts();
-  const index = posts.findIndex(p => p.id === id);
-  if (index === -1) return null;
+  const fields: string[] = [];
+  const values: any[] = [];
+  let paramIndex = 1;
 
-  posts[index] = { ...posts[index], ...updates };
-  await writeLocalPosts(posts);
+  if (updates.title !== undefined) {
+    fields.push(`title = $${paramIndex++}`);
+    values.push(updates.title);
+  }
+  if (updates.content !== undefined) {
+    fields.push(`content = $${paramIndex++}`);
+    values.push(updates.content);
+  }
+  if (updates.excerpt !== undefined) {
+    fields.push(`excerpt = $${paramIndex++}`);
+    values.push(updates.excerpt);
+  }
+  if (updates.author !== undefined) {
+    fields.push(`author = $${paramIndex++}`);
+    values.push(updates.author);
+  }
+  if (updates.slug !== undefined) {
+    fields.push(`slug = $${paramIndex++}`);
+    values.push(updates.slug);
+  }
+  if (updates.published !== undefined) {
+    fields.push(`published = $${paramIndex++}`);
+    values.push(updates.published);
+  }
+
+  if (fields.length === 0) return null;
 
   try {
-    const client = writeClient();
-    const { data, error } = await client
-      .from('posts')
-      .update({
-        title: updates.title,
-        content: updates.content,
-        excerpt: updates.excerpt,
-        author: updates.author,
-        slug: updates.slug,
-        published: updates.published,
-      })
-      .eq('id', id)
-      .select()
-      .single();
+    values.push(id);
+    const result = await query(
+      `UPDATE posts SET ${fields.join(', ')}, updated_at = NOW()
+       WHERE id = $${paramIndex}
+       RETURNING *`,
+      values
+    );
 
-    if (!error && data) {
+    if (result.rows && result.rows.length > 0) {
+      const data = result.rows[0];
+      // Sync to local file
+      const posts = await readLocalPosts();
+      const index = posts.findIndex(p => p.id === id);
+      if (index !== -1) {
+        posts[index] = { ...posts[index], ...updates };
+        await writeLocalPosts(posts);
+      }
       return {
         id: data.id,
         title: data.title,
@@ -175,27 +188,35 @@ export async function updatePost(id: string, updates: Partial<Post>): Promise<Po
       };
     }
   } catch (error) {
-    console.error('Supabase post update failed:', error);
+    console.error('DB post update failed:', error);
   }
 
+  // Fallback to local
+  const posts = await readLocalPosts();
+  const index = posts.findIndex(p => p.id === id);
+  if (index === -1) return null;
+
+  posts[index] = { ...posts[index], ...updates };
+  await writeLocalPosts(posts);
   return posts[index];
 }
 
 export async function deletePost(id: string): Promise<boolean> {
+  try {
+    const result = await query('DELETE FROM posts WHERE id = $1 RETURNING id', [id]);
+    if (result.rows && result.rows.length > 0) {
+      const posts = await readLocalPosts();
+      await writeLocalPosts(posts.filter(p => p.id !== id));
+      return true;
+    }
+  } catch (error) {
+    console.error('DB post delete failed:', error);
+  }
+
+  // Fallback to local
   const posts = await readLocalPosts();
   const filtered = posts.filter(p => p.id !== id);
   if (filtered.length === posts.length) return false;
   await writeLocalPosts(filtered);
-
-  try {
-    const client = writeClient();
-    const { error } = await client.from('posts').delete().eq('id', id);
-    if (error) {
-      console.error('Supabase post delete failed:', error);
-    }
-  } catch (error) {
-    console.error('Supabase post delete failed:', error);
-  }
-
   return true;
 }

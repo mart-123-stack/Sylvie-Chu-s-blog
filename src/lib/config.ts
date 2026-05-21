@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { supabase, supabaseAdmin } from './supabase';
+import { query } from './db';
 
 export interface AboutConfig {
   name: string;
@@ -72,32 +72,26 @@ const defaultPhotos: Photo[] = [
   { id: '9', title: 'Night Sky', category: 'Nature' },
 ];
 
-// Use admin client for writes when available (bypasses RLS on server side)
-function writeClient() {
-  return supabaseAdmin || supabase;
-}
-
 export async function getAboutConfig(): Promise<AboutConfig> {
   try {
-    const { data, error } = await supabase
-      .from('about_config')
-      .select('*')
-      .eq('id', 1)
-      .single();
+    const result = await query(
+      'SELECT * FROM about_config WHERE id = 1 LIMIT 1'
+    );
 
-    if (!error && data) {
+    if (result.rows && result.rows.length > 0) {
+      const data = result.rows[0];
       return {
         name: data.name,
         initials: data.initials,
         title: data.title,
         location: data.location,
         bio: data.bio,
-        skills: data.skills,
-        experience: data.experience,
+        skills: data.skills || [],
+        experience: data.experience || [],
       };
     }
   } catch (error) {
-    console.error('Supabase read failed:', error);
+    console.error('DB about config read failed:', error);
   }
 
   const local = await readLocalFile<AboutConfig>(aboutConfigPath);
@@ -109,45 +103,36 @@ export async function getAboutConfig(): Promise<AboutConfig> {
 export async function saveAboutConfig(config: AboutConfig): Promise<boolean> {
   const localSuccess = await writeLocalFile(aboutConfigPath, config);
 
-  let supabaseSuccess = false;
+  let dbSuccess = false;
   try {
-    const client = writeClient();
-    const { error } = await client
-      .from('about_config')
-      .update({
-        name: config.name,
-        initials: config.initials,
-        title: config.title,
-        location: config.location,
-        bio: config.bio,
-        skills: config.skills,
-        experience: config.experience,
-      })
-      .eq('id', 1)
-      .select();
+    const result = await query(
+      `UPDATE about_config SET
+        name = $1, initials = $2, title = $3, location = $4,
+        bio = $5, skills = $6, experience = $7, updated_at = NOW()
+       WHERE id = 1
+       RETURNING id`,
+      [config.name, config.initials, config.title, config.location,
+       config.bio, JSON.stringify(config.skills), JSON.stringify(config.experience)]
+    );
 
-    if (error) {
-      console.error('Supabase error saving about config:', error);
-    } else {
-      console.log('About config saved to Supabase successfully');
-      supabaseSuccess = true;
+    if (result.rows && result.rows.length > 0) {
+      dbSuccess = true;
     }
   } catch (error) {
-    console.error('Supabase save failed:', error);
+    console.error('DB about config save failed:', error);
   }
 
-  return localSuccess || supabaseSuccess;
+  return localSuccess || dbSuccess;
 }
 
 export async function getPhotos(): Promise<Photo[]> {
   try {
-    const { data, error } = await supabase
-      .from('photos')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const result = await query(
+      'SELECT * FROM photos ORDER BY created_at DESC'
+    );
 
-    if (!error && data && Array.isArray(data)) {
-      return data.map(photo => ({
+    if (result.rows && result.rows.length > 0) {
+      return result.rows.map(photo => ({
         id: photo.id,
         title: photo.title,
         category: photo.category,
@@ -155,7 +140,7 @@ export async function getPhotos(): Promise<Photo[]> {
       }));
     }
   } catch (error) {
-    console.error('Supabase photos read failed:', error);
+    console.error('DB photos read failed:', error);
   }
 
   const local = await readLocalFile<Photo[]>(photosConfigPath);
@@ -167,35 +152,21 @@ export async function getPhotos(): Promise<Photo[]> {
 export async function savePhotos(photos: Photo[]): Promise<boolean> {
   const localSuccess = await writeLocalFile(photosConfigPath, photos);
 
-  let supabaseSuccess = false;
+  let dbSuccess = false;
   try {
-    const client = writeClient();
-    const { error: deleteError } = await client.from('photos').delete().neq('id', '');
-    if (deleteError) {
-      console.error('Supabase error deleting photos:', deleteError);
+    await query('DELETE FROM photos WHERE 1=1');
+
+    for (const photo of photos) {
+      await query(
+        'INSERT INTO photos (id, title, category, url) VALUES ($1, $2, $3, $4)',
+        [photo.id, photo.title, photo.category, photo.url || null]
+      );
     }
 
-    const { error } = await client
-      .from('photos')
-      .insert(
-        photos.map(photo => ({
-          id: photo.id,
-          title: photo.title,
-          category: photo.category,
-          url: photo.url,
-        }))
-      )
-      .select();
-
-    if (error) {
-      console.error('Supabase error saving photos:', error);
-    } else {
-      console.log('Photos saved to Supabase successfully');
-      supabaseSuccess = true;
-    }
+    dbSuccess = true;
   } catch (error) {
-    console.error('Supabase photos save failed:', error);
+    console.error('DB photos save failed:', error);
   }
 
-  return localSuccess || supabaseSuccess;
+  return localSuccess || dbSuccess;
 }

@@ -3,27 +3,6 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 via-blue-100 to-indigo-100">
-      <nav className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-sky-100">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-primary-dark">Sylive Chu&apos;s Blog</h1>
-            <div className="space-x-6">
-              <Link href="/" className="text-foreground/70 hover:text-primary transition">
-                Home
-              </Link>
-              <Link href="/blog" className="text-foreground/70 hover:text-primary transition">
-                Blog
-              </Link>
-              <Link href="/about" className="text-foreground/70 hover:text-primary transition">
-                About
-              </Link>
-              <Link href="/gallery" className="text-foreground/70 hover:text-primary transition">
-                Gallery
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
 
       <main className="max-w-6xl mx-auto px-4 py-12">
         <div className="text-center mb-12">
@@ -70,7 +49,7 @@ export default function Home() {
 
       <footer className="bg-white/80 backdrop-blur-sm mt-12 py-6 border-t border-sky-100">
         <div className="max-w-6xl mx-auto px-4 text-center text-foreground/50">
-          <p>&copy; 2024 Personal Blog. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Personal Blog. All rights reserved.</p>
         </div>
       </footer>
     </div>

@@ -1,4 +1,6 @@
--- Create posts table
+-- Initialize blog database schema
+-- Used by docker-entrypoint-initdb.d/
+
 CREATE TABLE IF NOT EXISTS posts (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
@@ -11,7 +13,6 @@ CREATE TABLE IF NOT EXISTS posts (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create about_config table
 CREATE TABLE IF NOT EXISTS about_config (
   id INTEGER PRIMARY KEY DEFAULT 1,
   name TEXT NOT NULL,
@@ -24,7 +25,6 @@ CREATE TABLE IF NOT EXISTS about_config (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create photos table
 CREATE TABLE IF NOT EXISTS photos (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
@@ -33,7 +33,16 @@ CREATE TABLE IF NOT EXISTS photos (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Insert default about config
+CREATE TABLE IF NOT EXISTS comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_slug TEXT NOT NULL,
+  author_name TEXT NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_comments_post_slug ON comments(post_slug);
+
 INSERT INTO about_config (id, name, initials, title, location, bio, skills, experience)
 VALUES (
   1,
@@ -49,7 +58,6 @@ When I''m not coding, you can find me hiking, reading, or exploring new coffee s
 )
 ON CONFLICT (id) DO NOTHING;
 
--- Insert default photos
 INSERT INTO photos (id, title, category) VALUES
   ('1', 'Mountain View', 'Nature'),
   ('2', 'City Lights', 'Urban'),
@@ -61,48 +69,3 @@ INSERT INTO photos (id, title, category) VALUES
   ('8', 'Autumn Leaves', 'Nature'),
   ('9', 'Night Sky', 'Nature')
 ON CONFLICT (id) DO NOTHING;
-
--- Create comments table
-CREATE TABLE IF NOT EXISTS comments (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  post_slug TEXT NOT NULL,
-  author_name TEXT NOT NULL,
-  content TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_comments_post_slug ON comments(post_slug);
-
--- Enable Row Level Security (RLS)
-ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE about_config ENABLE ROW LEVEL SECURITY;
-ALTER TABLE photos ENABLE ROW LEVEL SECURITY;
-ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
-
--- Drop existing policies if they exist
-DROP POLICY IF EXISTS "Public read access for posts" ON posts;
-DROP POLICY IF EXISTS "Public read access for about_config" ON about_config;
-DROP POLICY IF EXISTS "Public read access for photos" ON photos;
-DROP POLICY IF EXISTS "Authenticated write access for posts" ON posts;
-DROP POLICY IF EXISTS "Authenticated write access for about_config" ON about_config;
-DROP POLICY IF EXISTS "Authenticated write access for photos" ON photos;
-
--- Create policies for public read access
-CREATE POLICY "Public read access for posts" ON posts
-  FOR SELECT USING (true);
-
-CREATE POLICY "Public read access for about_config" ON about_config
-  FOR SELECT USING (true);
-
-CREATE POLICY "Public read access for photos" ON photos
-  FOR SELECT USING (true);
-
--- Create policies for authenticated write access
-CREATE POLICY "Authenticated write access for posts" ON posts
-  FOR ALL USING (auth.role() = 'authenticated');
-
-CREATE POLICY "Authenticated write access for about_config" ON about_config
-  FOR ALL USING (auth.role() = 'authenticated');
-
-CREATE POLICY "Authenticated write access for photos" ON photos
-  FOR ALL USING (auth.role() = 'authenticated');

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getPhotos } from "@/lib/config";
 
 export const dynamic = 'force-dynamic';
@@ -9,27 +8,6 @@ export default async function GalleryPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-indigo-950">
-      <nav className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-sky-100 dark:bg-sky-950/80 dark:border-sky-900">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-sky-900 dark:text-white">Sylive Chu&apos;s Blog</h1>
-            <div className="space-x-6">
-              <Link href="/" className="text-foreground/70 hover:text-sky-600 dark:hover:text-sky-400 transition">
-                Home
-              </Link>
-              <Link href="/blog" className="text-foreground/70 hover:text-sky-600 dark:hover:text-sky-400 transition">
-                Blog
-              </Link>
-              <Link href="/about" className="text-foreground/70 hover:text-sky-600 dark:hover:text-sky-400 transition">
-                About
-              </Link>
-              <Link href="/gallery" className="text-foreground/70 hover:text-sky-600 dark:hover:text-sky-400 transition">
-                Gallery
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
 
       <main className="max-w-6xl mx-auto px-4 py-12">
         <h2 className="text-4xl font-bold text-sky-900 dark:text-white mb-8">Photo Gallery</h2>
@@ -60,7 +38,7 @@ export default async function GalleryPage() {
 
       <footer className="bg-white/80 backdrop-blur-sm dark:bg-sky-950/80 mt-12 py-6 border-t border-sky-100 dark:border-sky-900">
         <div className="max-w-6xl mx-auto px-4 text-center text-foreground/50 dark:text-sky-300">
-          <p>&copy; 2024 Personal Blog. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Personal Blog. All rights reserved.</p>
         </div>
       </footer>
     </div>
