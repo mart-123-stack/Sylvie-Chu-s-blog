@@ -1,8 +1,31 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { getPostBySlug } from "@/lib/posts";
 import { notFound } from "next/navigation";
 import CommentSection from "@/components/CommentSection";
 import LikeFavoriteBar from "@/components/LikeFavoriteBar";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
+
+interface BlogPostParams {
+  params: { slug: string };
+}
+
+export async function generateMetadata({ params }: BlogPostParams): Promise<Metadata> {
+  const post = await getPostBySlug(params.slug);
+  if (!post) return { title: "Post Not Found" };
+
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: "article",
+      publishedTime: post.date,
+      tags: post.tags,
+    },
+  };
+}
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   const post = await getPostBySlug(params.slug);
@@ -23,15 +46,24 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
           <h1 className="text-4xl font-bold text-sky-900 mb-4">
             {post.title}
           </h1>
-          <div className="text-foreground/40 mb-6">
-            Published on {new Date(post.date).toLocaleDateString()} by {post.author}
+          <div className="flex flex-wrap items-center gap-2 text-foreground/40 mb-6">
+            <span>Published on {new Date(post.date).toLocaleDateString()} by {post.author}</span>
+            {post.tags && post.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 ml-2">
+                {post.tags.map(t => (
+                  <Link
+                    key={t}
+                    href={`/blog?tag=${encodeURIComponent(t)}`}
+                    className="text-xs px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition"
+                  >
+                    {t}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="prose max-w-none">
-            <p className="text-foreground/70 mb-4 whitespace-pre-wrap">
-              {post.content}
-            </p>
-          </div>
+          <MarkdownRenderer content={post.content} />
 
           <LikeFavoriteBar postSlug={params.slug} />
           <CommentSection postSlug={params.slug} />

@@ -31,12 +31,12 @@ export default function AdminPage() {
 
   const fetchPosts = async () => {
     try {
-      const response = await fetch(`/api/posts?t=${Date.now()}`);
+      const response = await fetch(`/api/posts?limit=100&t=${Date.now()}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setPosts(data);
+      setPosts(Array.isArray(data) ? data : data.posts || []);
     } catch (err) {
       console.error('Failed to fetch posts:', err);
       setError('Failed to fetch posts');

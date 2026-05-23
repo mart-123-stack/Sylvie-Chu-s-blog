@@ -11,6 +11,7 @@ export interface Post {
   date: string;
   slug: string;
   published: boolean;
+  tags: string[];
 }
 
 const postsFilePath = path.join(process.cwd(), 'data', 'posts.json');
@@ -34,12 +35,92 @@ async function writeLocalPosts(posts: Post[]): Promise<boolean> {
   }
 }
 
-export async function getPosts(): Promise<Post[]> {
+export async function getPosts(options?: {
+  tag?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}): Promise<{ posts: Post[]; total: number }> {
+  const tag = options?.tag;
+  const search = options?.search;
+  const page = options?.page ?? 1;
+  const limit = options?.limit ?? 10;
+  const offset = (page - 1) * limit;
+
   try {
+    const conditions: string[] = [];
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    if (tag) {
+      conditions.push(`$${paramIndex++} = ANY(tags)`);
+      params.push(tag);
+    }
+    if (search) {
+      conditions.push(
+        `(title ILIKE $${paramIndex} OR content ILIKE $${paramIndex} OR excerpt ILIKE $${paramIndex})`
+      );
+      params.push(`%${search}%`);
+      paramIndex++;
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const countResult = await query(
+      `SELECT COUNT(*) FROM posts ${whereClause}`,
+      params
+    );
+    const total = parseInt(countResult.rows[0]?.count || '0', 10);
+
     const result = await query(
-      'SELECT * FROM posts ORDER BY created_at DESC'
+      `SELECT * FROM posts ${whereClause} ORDER BY created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
+      [...params, limit, offset]
     );
 
+    if (result.rows && result.rows.length > 0) {
+      const posts = result.rows.map(post => ({
+        id: post.id,
+        title: post.title,
+        content: post.content,
+        excerpt: post.excerpt,
+        author: post.author,
+        date: post.created_at,
+        slug: post.slug,
+        published: post.published,
+        tags: post.tags || [],
+      }));
+      return { posts, total };
+    }
+
+    return { posts: [], total: 0 };
+  } catch (error) {
+    console.error('DB posts read failed:', error);
+  }
+
+  const allPosts = await readLocalPosts();
+  let filtered = allPosts;
+
+  if (tag) {
+    filtered = filtered.filter(p => p.tags?.includes(tag));
+  }
+  if (search) {
+    const q = search.toLowerCase();
+    filtered = filtered.filter(
+      p =>
+        p.title.toLowerCase().includes(q) ||
+        p.content.toLowerCase().includes(q) ||
+        p.excerpt.toLowerCase().includes(q)
+    );
+  }
+
+  const total = filtered.length;
+  const posts = filtered.slice(offset, offset + limit);
+  return { posts, total };
+}
+
+export async function getAllPosts(): Promise<Post[]> {
+  try {
+    const result = await query('SELECT * FROM posts ORDER BY created_at DESC');
     if (result.rows && result.rows.length > 0) {
       return result.rows.map(post => ({
         id: post.id,
@@ -50,12 +131,12 @@ export async function getPosts(): Promise<Post[]> {
         date: post.created_at,
         slug: post.slug,
         published: post.published,
+        tags: post.tags || [],
       }));
     }
   } catch (error) {
     console.error('DB posts read failed:', error);
   }
-
   return readLocalPosts();
 }
 
@@ -77,6 +158,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
         date: post.created_at,
         slug: post.slug,
         published: post.published,
+        tags: post.tags || [],
       };
     }
   } catch (error) {
@@ -87,11 +169,25 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   return posts.find(p => p.slug === slug) || null;
 }
 
+export async function getAllTags(): Promise<string[]> {
+  try {
+    const result = await query('SELECT DISTINCT unnest(tags) AS tag FROM posts ORDER BY tag');
+    return result.rows.map(r => r.tag);
+  } catch (error) {
+    console.error('DB tags read failed:', error);
+    const posts = await readLocalPosts();
+    const tagSet = new Set<string>();
+    posts.forEach(p => p.tags?.forEach(t => tagSet.add(t)));
+    return Array.from(tagSet).sort();
+  }
+}
+
 export async function createPost(post: Omit<Post, 'id' | 'date'>): Promise<Post> {
   const newPost: Post = {
     ...post,
     id: Date.now().toString(),
     date: new Date().toISOString(),
+    tags: post.tags || [],
   };
 
   const posts = await readLocalPosts();
@@ -100,10 +196,10 @@ export async function createPost(post: Omit<Post, 'id' | 'date'>): Promise<Post>
 
   try {
     const result = await query(
-      `INSERT INTO posts (id, title, content, excerpt, author, slug, published)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO posts (id, title, content, excerpt, author, slug, published, tags)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [newPost.id, post.title, post.content, post.excerpt, post.author, post.slug, post.published]
+      [newPost.id, post.title, post.content, post.excerpt, post.author, post.slug, post.published, post.tags || []]
     );
 
     if (result.rows && result.rows.length > 0) {
@@ -117,6 +213,7 @@ export async function createPost(post: Omit<Post, 'id' | 'date'>): Promise<Post>
         date: data.created_at,
         slug: data.slug,
         published: data.published,
+        tags: data.tags || [],
       };
     }
   } catch (error) {
@@ -155,6 +252,10 @@ export async function updatePost(id: string, updates: Partial<Post>): Promise<Po
     fields.push(`published = $${paramIndex++}`);
     values.push(updates.published);
   }
+  if (updates.tags !== undefined) {
+    fields.push(`tags = $${paramIndex++}`);
+    values.push(updates.tags);
+  }
 
   if (fields.length === 0) return null;
 
@@ -185,6 +286,7 @@ export async function updatePost(id: string, updates: Partial<Post>): Promise<Po
         date: data.created_at,
         slug: data.slug,
         published: data.published,
+        tags: data.tags || [],
       };
     }
   } catch (error) {

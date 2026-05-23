@@ -1,32 +1,106 @@
 import Link from "next/link";
-import { getPosts } from "@/lib/posts";
+import { getPosts, getAllTags } from "@/lib/posts";
+import BlogSearchBar from "@/components/BlogSearchBar";
+import BlogPagination from "@/components/BlogPagination";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default async function BlogPage() {
-  const posts = (await getPosts()).filter(post => post.published);
+interface BlogPageProps {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+export default async function BlogPage({ searchParams }: BlogPageProps) {
+  const tag = typeof searchParams?.tag === 'string' ? searchParams.tag : undefined;
+  const search = typeof searchParams?.search === 'string' ? searchParams.search : undefined;
+  const page = typeof searchParams?.page === 'string' ? parseInt(searchParams.page, 10) : 1;
+
+  const { posts: allPosts, total } = await getPosts({
+    tag,
+    search,
+    page,
+    limit: 5,
+  });
+
+  const posts = allPosts.filter(post => post.published);
+  const tags = await getAllTags();
+  const totalPages = Math.ceil(total / 5);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 via-blue-100 to-indigo-100">
 
-      <main className="max-w-6xl mx-auto px-4 py-12">
-        <h2 className="text-4xl font-bold text-sky-900 mb-8">Blog Posts</h2>
+      <main className="max-w-4xl mx-auto px-4 py-12">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+          <h2 className="text-4xl font-bold text-sky-900">Blog Posts</h2>
+          <BlogSearchBar initialSearch={search} />
+        </div>
+
+        {/* Tags filter */}
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-8">
+            <Link
+              href="/blog"
+              className={`px-3 py-1 rounded-full text-sm transition ${
+                !tag
+                  ? 'bg-sky-600 text-white'
+                  : 'bg-white/80 text-sky-700 hover:bg-sky-100'
+              }`}
+            >
+              All
+            </Link>
+            {tags.map(t => (
+              <Link
+                key={t}
+                href={`/blog?tag=${encodeURIComponent(t)}${search ? `&search=${encodeURIComponent(search)}` : ''}`}
+                className={`px-3 py-1 rounded-full text-sm transition ${
+                  tag === t
+                    ? 'bg-sky-600 text-white'
+                    : 'bg-white/80 text-sky-700 hover:bg-sky-100'
+                }`}
+              >
+                {t}
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {search && (
+          <p className="text-foreground/60 mb-6">
+            Search results for: <span className="font-semibold text-sky-700">&ldquo;{search}&rdquo;</span>
+            {posts.length === 0 ? ' — no posts found' : ` — ${total} post${total !== 1 ? 's' : ''}`}
+          </p>
+        )}
 
         <div className="space-y-6">
           {posts.length === 0 ? (
             <div className="bg-white/90 rounded-xl shadow-lg shadow-sky-100 p-8 text-center border border-sky-100">
-              <p className="text-foreground/60">No posts published yet.</p>
+              <p className="text-foreground/60">
+                {search || tag ? 'No posts match your criteria.' : 'No posts published yet.'}
+              </p>
             </div>
           ) : (
             posts.map((post) => (
               <div key={post.id} className="bg-white/90 rounded-xl shadow-lg shadow-sky-100 p-6 hover:shadow-xl hover:shadow-sky-200 transition border border-sky-100">
                 <h3 className="text-2xl font-semibold text-sky-900 mb-2">{post.title}</h3>
                 <p className="text-foreground/60 mb-4">{post.excerpt}</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-foreground/40">
-                    {new Date(post.date).toLocaleDateString()}
-                  </span>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm text-foreground/40">
+                      {new Date(post.date).toLocaleDateString()}
+                    </span>
+                    {post.tags && post.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {post.tags.map(t => (
+                          <span
+                            key={t}
+                            className="text-xs px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <Link href={`/blog/${post.slug}`} className="text-sky-600 hover:text-sky-700 hover:underline">
                     Read more →
                   </Link>
@@ -35,6 +109,10 @@ export default async function BlogPage() {
             ))
           )}
         </div>
+
+        {totalPages > 1 && (
+          <BlogPagination currentPage={page} totalPages={totalPages} tag={tag} search={search} />
+        )}
       </main>
 
       <footer className="bg-white/80 backdrop-blur-sm mt-12 py-6 border-t border-sky-100">

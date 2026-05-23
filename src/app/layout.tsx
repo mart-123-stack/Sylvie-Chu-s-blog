@@ -1,11 +1,21 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { ThemeProvider } from "@/lib/theme-context";
 import SiteHeader from "@/components/SiteHeader";
 
 export const metadata: Metadata = {
-  title: "Sylive Chu's Blog",
+  title: {
+    default: "Sylive Chu's Blog",
+    template: "%s | Sylive Chu's Blog",
+  },
   description: "A personal blog with articles, resume, and photo gallery",
+  openGraph: {
+    title: "Sylive Chu's Blog",
+    description: "A personal blog with articles, resume, and photo gallery",
+    type: "website",
+    locale: "en_US",
+  },
 };
 
 export default function RootLayout({
@@ -14,12 +24,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="antialiased">
-        <AuthProvider>
-          <SiteHeader />
-          {children}
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <SiteHeader />
+            {children}
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

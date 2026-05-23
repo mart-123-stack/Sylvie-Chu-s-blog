@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import MarkdownEditor from '@/components/MarkdownEditor';
 
 interface Post {
   id: string;
@@ -13,6 +14,7 @@ interface Post {
   date: string;
   slug: string;
   published: boolean;
+  tags: string[];
 }
 
 export default function EditPostPage() {
@@ -24,6 +26,7 @@ export default function EditPostPage() {
     excerpt: '',
     author: 'Admin',
     published: false,
+    tags: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -36,8 +39,9 @@ export default function EditPostPage() {
   const fetchPost = async () => {
     try {
       const response = await fetch(`/api/posts?t=${Date.now()}`);
-      const posts: Post[] = await response.json();
-      const post = posts.find(p => p.id === params.id);
+      const data = await response.json();
+      const posts: Post[] = Array.isArray(data) ? data : data.posts || [];
+      const post = posts.find((p: Post) => p.id === params.id);
 
       if (post) {
         setFormData({
@@ -46,6 +50,7 @@ export default function EditPostPage() {
           excerpt: post.excerpt,
           author: post.author,
           published: post.published,
+          tags: (post.tags || []).join(', '),
         });
       }
     } catch (err) {
@@ -66,6 +71,11 @@ export default function EditPostPage() {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
 
+    const tags = formData.tags
+      .split(',')
+      .map(t => t.trim())
+      .filter(Boolean);
+
     try {
       const response = await fetch(`/api/posts/${params.id}`, {
         method: 'PUT',
@@ -74,7 +84,12 @@ export default function EditPostPage() {
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
-          ...formData,
+          title: formData.title,
+          content: formData.content,
+          excerpt: formData.excerpt,
+          author: formData.author,
+          published: formData.published,
+          tags,
           slug,
         }),
       });
@@ -115,21 +130,35 @@ export default function EditPostPage() {
         </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto px-4 py-12">
+      <main className="max-w-6xl mx-auto px-4 py-12">
         <form onSubmit={handleSubmit} className="bg-white dark:bg-sky-950 rounded-lg shadow-lg shadow-sky-100 dark:shadow-sky-900/20 p-8 border border-sky-100 dark:border-sky-900">
           {error && <p className="text-red-500 mb-4">{error}</p>}
 
-          <div className="mb-6">
-            <label className="block text-gray-700 dark:text-gray-300 mb-2 font-semibold">
-              Title
-            </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-              required
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2 font-semibold">
+                Title
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2 font-semibold">
+                Tags (comma-separated)
+              </label>
+              <input
+                type="text"
+                value={formData.tags}
+                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                placeholder="Next.js, TypeScript, React"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+              />
+            </div>
           </div>
 
           <div className="mb-6">
@@ -147,14 +176,12 @@ export default function EditPostPage() {
 
           <div className="mb-6">
             <label className="block text-gray-700 dark:text-gray-300 mb-2 font-semibold">
-              Content
+              Content (Markdown)
             </label>
-            <textarea
+            <MarkdownEditor
               value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-              rows={15}
-              required
+              onChange={(content) => setFormData({ ...formData, content })}
+              minHeight="500px"
             />
           </div>
 
