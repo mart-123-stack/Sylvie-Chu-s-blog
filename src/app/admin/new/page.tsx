@@ -26,7 +26,7 @@ export default function NewPostPage() {
     const token = localStorage.getItem('adminToken');
     const slug = formData.title
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/[^a-z0-9一-鿿]+/g, '-')
       .replace(/(^-|-$)/g, '');
 
     const tags = formData.tags
