@@ -53,14 +53,14 @@ export default function LikeFavoriteBar({ postSlug }: { postSlug: string }) {
   };
 
   return (
-    <div className="flex items-center gap-4 py-4 border-y border-sky-100 my-6">
+    <div className="flex items-center gap-4 py-4 border-y border-sky-100 my-6 dark:border-slate-700">
       <button
         onClick={handleLike}
         disabled={!token}
         className={`flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm ${
           likes.liked
-            ? 'bg-red-50 text-red-600 border border-red-200'
-            : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+            ? 'bg-red-50 text-red-600 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800'
+            : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 dark:bg-slate-700 dark:text-sky-300 dark:border-slate-600 dark:hover:bg-slate-600'
         } ${!token ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
         <span>{likes.liked ? '❤️' : '🤍'}</span>
@@ -72,8 +72,8 @@ export default function LikeFavoriteBar({ postSlug }: { postSlug: string }) {
         disabled={!token}
         className={`flex items-center gap-1.5 px-4 py-2 rounded-lg transition text-sm ${
           favorited
-            ? 'bg-yellow-50 text-yellow-600 border border-yellow-200'
-            : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+            ? 'bg-yellow-50 text-yellow-600 border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800'
+            : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 dark:bg-slate-700 dark:text-sky-300 dark:border-slate-600 dark:hover:bg-slate-600'
         } ${!token ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
         <span>{favorited ? '★' : '☆'}</span>
@@ -81,7 +81,7 @@ export default function LikeFavoriteBar({ postSlug }: { postSlug: string }) {
       </button>
 
       {!token && (
-        <Link href="/login" className="text-xs text-sky-600 hover:underline ml-auto">
+        <Link href="/login" className="text-xs text-sky-600 hover:underline ml-auto dark:text-sky-400">
           Login to like & save
         </Link>
       )}

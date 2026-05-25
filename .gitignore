@@ -29,6 +29,10 @@ yarn-error.log*
 .env.local
 .env*.local
 
+# session context (contains secrets)
+SESSION_CONTEXT.md
+SESSION_CONTENT.md
+
 # vercel
 .vercel
 

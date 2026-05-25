@@ -24,7 +24,7 @@ export default function BlogPagination({ currentPage, totalPages, tag, search }:
       {currentPage > 1 && (
         <Link
           href={buildHref(currentPage - 1)}
-          className="px-4 py-2 bg-white/90 border border-sky-100 rounded-lg text-sky-700 hover:bg-sky-50 transition"
+          className="px-4 py-2 bg-white/90 border border-sky-100 rounded-lg text-sky-700 hover:bg-sky-50 transition dark:bg-slate-800 dark:border-slate-700 dark:text-sky-300 dark:hover:bg-slate-700"
         >
           ← Previous
         </Link>
@@ -36,7 +36,7 @@ export default function BlogPagination({ currentPage, totalPages, tag, search }:
           className={`px-3 py-2 rounded-lg text-sm transition ${
             page === currentPage
               ? 'bg-sky-600 text-white'
-              : 'bg-white/90 border border-sky-100 text-sky-700 hover:bg-sky-50'
+              : 'bg-white/90 border border-sky-100 text-sky-700 hover:bg-sky-50 dark:bg-slate-800 dark:border-slate-700 dark:text-sky-300 dark:hover:bg-slate-700'
           }`}
         >
           {page}
@@ -45,7 +45,7 @@ export default function BlogPagination({ currentPage, totalPages, tag, search }:
       {currentPage < totalPages && (
         <Link
           href={buildHref(currentPage + 1)}
-          className="px-4 py-2 bg-white/90 border border-sky-100 rounded-lg text-sky-700 hover:bg-sky-50 transition"
+          className="px-4 py-2 bg-white/90 border border-sky-100 rounded-lg text-sky-700 hover:bg-sky-50 transition dark:bg-slate-800 dark:border-slate-700 dark:text-sky-300 dark:hover:bg-slate-700"
         >
           Next →
         </Link>

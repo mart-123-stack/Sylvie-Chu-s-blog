@@ -7,7 +7,7 @@ export default async function GalleryPage() {
   const photos = await getPhotos();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-slate-900 dark:to-indigo-950">
 
       <main className="max-w-6xl mx-auto px-4 py-12">
         <h2 className="text-4xl font-bold text-sky-900 dark:text-white mb-8">Photo Gallery</h2>
@@ -16,9 +16,9 @@ export default async function GalleryPage() {
           {photos.map((photo) => (
             <div
               key={photo.id}
-              className="bg-white dark:bg-sky-950 rounded-lg shadow-lg shadow-sky-100 dark:shadow-sky-900/20 overflow-hidden hover:shadow-xl hover:shadow-sky-200 dark:hover:shadow-sky-800/30 transition transform hover:-translate-y-1"
+              className="bg-white dark:bg-slate-800 rounded-lg shadow-lg shadow-sky-100 dark:shadow-slate-900/30 overflow-hidden hover:shadow-xl hover:shadow-sky-200 dark:hover:shadow-slate-800/30 transition transform hover:-translate-y-1"
             >
-              <div className="aspect-video bg-gradient-to-br from-sky-100 to-sky-200 dark:from-sky-800 dark:to-sky-700 flex items-center justify-center">
+              <div className="aspect-video bg-gradient-to-br from-sky-100 to-sky-200 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center">
                 {photo.url ? (
                   <img src={photo.url} alt={photo.title} className="w-full h-full object-cover" />
                 ) : (

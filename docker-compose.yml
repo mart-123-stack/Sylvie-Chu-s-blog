@@ -23,6 +23,7 @@ services:
     environment:
       DATABASE_URL: postgresql://blog:blog_password@db:5432/blog
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-your_password_here}
+      JWT_SECRET: ${JWT_SECRET:-blog_jwt_secret_change_in_production}
       NODE_ENV: production
     depends_on:
       db:

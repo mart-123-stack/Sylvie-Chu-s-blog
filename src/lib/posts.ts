@@ -97,6 +97,7 @@ export async function getPosts(options?: {
     console.error('DB posts read failed:', error);
   }
 
+  // Fallback: try reading local JSON cache (may be stale on fresh deploys)
   const allPosts = await readLocalPosts();
   let filtered = allPosts;
 

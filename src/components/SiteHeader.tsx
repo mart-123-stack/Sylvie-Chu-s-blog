@@ -9,7 +9,7 @@ export default function SiteHeader() {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <nav className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-sky-100 dark:bg-sky-950/80 dark:border-sky-900">
+    <nav className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-sky-100 dark:bg-slate-900/80 dark:border-slate-700">
       <div className="max-w-6xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <Link href="/" className="text-2xl font-bold text-sky-900 dark:text-white">
@@ -39,7 +39,7 @@ export default function SiteHeader() {
             )}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900 transition"
+              className="p-2 rounded-lg text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-800 transition"
               aria-label="Toggle theme"
               title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
