@@ -46,11 +46,21 @@ async function main() {
   app.use(express.json());
 
   app.post("/mcp", async (req, res) => {
-    await transport.handleRequest(req, res, req.body);
+    try {
+      await transport.handleRequest(req, res, req.body);
+    } catch (err) {
+      console.error("POST /mcp error:", err);
+      if (!res.headersSent) res.status(500).json({ error: String(err) });
+    }
   });
 
   app.get("/mcp", async (req, res) => {
-    await transport.handleRequest(req, res);
+    try {
+      await transport.handleRequest(req, res);
+    } catch (err) {
+      console.error("GET /mcp error:", err);
+      if (!res.headersSent) res.status(500).json({ error: String(err) });
+    }
   });
 
   const port = parseInt(process.env.PORT || "3100", 10);
