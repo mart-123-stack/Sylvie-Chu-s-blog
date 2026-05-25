@@ -33,6 +33,10 @@ yarn-error.log*
 SESSION_CONTEXT.md
 SESSION_CONTENT.md
 
+# local Claude settings (MCP server env, personal config)
+.claude/settings.local.json
+.claude/settings.json
+
 # vercel
 .vercel
 
