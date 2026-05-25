@@ -1,5 +1,6 @@
+import express from "express";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
@@ -38,9 +39,24 @@ async function main() {
     process.exit(1);
   }
 
-  const transport = new StdioServerTransport();
+  const transport = new StreamableHTTPServerTransport();
   await server.connect(transport);
-  console.error("📝 Blog MCP Server running on stdio");
+
+  const app = express();
+  app.use(express.json());
+
+  app.post("/mcp", async (req, res) => {
+    await transport.handleRequest(req, res, req.body);
+  });
+
+  app.get("/mcp", async (req, res) => {
+    await transport.handleRequest(req, res);
+  });
+
+  const port = parseInt(process.env.PORT || "3100", 10);
+  app.listen(port, "0.0.0.0", () => {
+    console.error(`📝 Blog MCP Server running on http://0.0.0.0:${port}/mcp`);
+  });
 }
 
 main().catch((err) => {

@@ -32,5 +32,19 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  mcp-server:
+    build:
+      context: ./mcp
+      dockerfile: Dockerfile
+    ports:
+      - "3100:3100"
+    environment:
+      DATABASE_URL: postgresql://blog:blog_password@db:5432/blog
+      PORT: "3100"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres_data:
