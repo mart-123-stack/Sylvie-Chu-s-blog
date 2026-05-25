@@ -1,4 +1,5 @@
 import http from "http";
+import { randomUUID } from "crypto";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import {
@@ -39,7 +40,9 @@ async function main() {
     process.exit(1);
   }
 
-  const transport = new StreamableHTTPServerTransport();
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: () => randomUUID(),
+  });
   await server.connect(transport);
 
   const httpServer = http.createServer(async (req, res) => {
