@@ -31,6 +31,8 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    volumes:
+      - uploads_data:/app/public/uploads
 
   mcp-server:
     build:
@@ -48,3 +50,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:

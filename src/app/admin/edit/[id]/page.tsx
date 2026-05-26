@@ -66,10 +66,11 @@ export default function EditPostPage() {
     setError('');
 
     const token = localStorage.getItem('adminToken');
-    const slug = formData.title
+    let slug = formData.title
       .toLowerCase()
-      .replace(/[^a-z0-9一-鿿]+/g, '-')
+      .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
+    if (!slug) slug = `post-${Date.now()}`;
 
     const tags = formData.tags
       .split(',')

@@ -42,8 +42,8 @@ export default function AdminAboutPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      setError('Image must be under 2MB');
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be under 5MB');
       return;
     }
 
@@ -51,8 +51,24 @@ export default function AdminAboutPage() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
-      setAvatarPreview(dataUrl);
-      setFormData({ ...formData, avatar: dataUrl });
+      // Resize large avatars client-side
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 400;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const ctx = c.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, w, h);
+        const resized = c.toDataURL('image/jpeg', 0.7);
+        setAvatarPreview(resized);
+        setFormData({ ...formData, avatar: resized });
+      };
+      img.src = dataUrl;
     };
     reader.readAsDataURL(file);
   };

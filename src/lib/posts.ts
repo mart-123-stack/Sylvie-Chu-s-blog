@@ -141,13 +141,12 @@ export async function getAllPosts(): Promise<Post[]> {
   return readLocalPosts();
 }
 
-export async function getPostBySlug(slug: string): Promise<Post | null> {
+async function queryPostBySlug(slug: string): Promise<Post | null> {
   try {
     const result = await query(
       'SELECT * FROM posts WHERE slug = $1 LIMIT 1',
       [slug]
     );
-
     if (result.rows && result.rows.length > 0) {
       const post = result.rows[0];
       return {
@@ -165,9 +164,44 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   } catch (error) {
     console.error('DB post read failed:', error);
   }
+  return null;
+}
 
+export async function getPostBySlug(slug: string): Promise<Post | null> {
+  // Try the slug as-is
+  let post = await queryPostBySlug(slug);
+  if (post) return post;
+
+  // Try URL-decoded (handles Chinese chars in URLs like /blog/%E7%BE%8E...)
+  try {
+    const decoded = decodeURIComponent(slug);
+    if (decoded !== slug) {
+      post = await queryPostBySlug(decoded);
+      if (post) return post;
+    }
+  } catch {}
+
+  // Try URL-encoded (in case DB stores the encoded form)
+  try {
+    const encoded = encodeURIComponent(slug);
+    if (encoded !== slug) {
+      post = await queryPostBySlug(encoded);
+      if (post) return post;
+    }
+  } catch {}
+
+  // Fallback to local JSON, trying both raw and decoded
   const posts = await readLocalPosts();
-  return posts.find(p => p.slug === slug) || null;
+  const decodedSlug = tryDecode(slug);
+  return posts.find(p => p.slug === slug || p.slug === decodedSlug) || null;
+}
+
+function tryDecode(s: string): string {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
 }
 
 export async function getAllTags(): Promise<string[]> {

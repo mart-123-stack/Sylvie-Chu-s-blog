@@ -12,8 +12,15 @@ export default function SiteHeader() {
     <nav className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-sky-100 dark:bg-slate-900/80 dark:border-slate-700">
       <div className="max-w-6xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-sky-900 dark:text-white">
-            Sylive Chu&apos;s Blog
+          <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-sky-900 dark:text-white">
+            <img
+              src="/images/mascot.jpg"
+              alt="小蓝"
+              width={32}
+              height={32}
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-sky-200 dark:ring-sky-700"
+            />
+            <span>Sylive Chu&apos;s Blog</span>
           </Link>
           <div className="flex items-center space-x-6">
             <Link href="/" className="text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition">Home</Link>

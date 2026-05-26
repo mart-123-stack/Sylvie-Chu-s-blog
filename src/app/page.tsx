@@ -1,17 +1,40 @@
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const DinoGame = dynamic(() => import("@/components/DinoGame"), { ssr: false });
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-100 via-blue-100 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950">
 
       <main className="max-w-6xl mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h2 className="text-5xl font-bold text-primary-dark mb-4 dark:text-white">
-            Welcome to My Personal Blog
-          </h2>
-          <p className="text-xl text-foreground/60">
-            Sharing thoughts, experiences, and moments
-          </p>
+        {/* Hero */}
+        <div className="relative overflow-hidden min-h-[360px] flex items-center justify-center">
+          {/* Background mascot decoration — centered behind text */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+            <div className="relative w-72 md:w-80 aspect-[3/4]"
+              style={{
+                maskImage: 'radial-gradient(ellipse 80% 75% at 50% 25%, black 30%, transparent 62%)',
+                WebkitMaskImage: 'radial-gradient(ellipse 80% 75% at 50% 25%, black 30%, transparent 62%)',
+              }}>
+              <img
+                src="/images/mascot-cutout.jpg"
+                alt="小蓝"
+                className="w-full h-full object-contain opacity-30 dark:opacity-20"
+              />
+            </div>
+          </div>
+          {/* Background glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-sky-300/20 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 text-center mb-12">
+            <h2 className="text-5xl font-bold text-primary-dark mb-4 dark:text-white">
+              Welcome to My Personal Blog
+            </h2>
+            <p className="text-xl text-foreground/60">
+              Sharing thoughts, experiences, and moments
+            </p>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -44,6 +67,11 @@ export default function Home() {
             <h3 className="text-xl font-semibold text-primary-dark mb-2 dark:text-white">Photo Gallery</h3>
             <p className="text-foreground/60">Browse through my photo collection</p>
           </Link>
+        </div>
+
+        {/* Dino Game Section */}
+        <div className="mt-12 max-w-6xl mx-auto">
+          <DinoGame />
         </div>
       </main>
 

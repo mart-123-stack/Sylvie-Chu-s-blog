@@ -69,3 +69,13 @@ INSERT INTO photos (id, title, category) VALUES
   ('8', 'Autumn Leaves', 'Nature'),
   ('9', 'Night Sky', 'Nature')
 ON CONFLICT (id) DO NOTHING;
+
+-- Game scores for Pixel Run leaderboard
+CREATE TABLE IF NOT EXISTS game_scores (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID UNIQUE REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+  score INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_game_scores_score ON game_scores(score DESC);
