@@ -6,7 +6,7 @@ import { ThemeProvider } from "@/lib/theme-context";
 import SiteHeader from "@/components/SiteHeader";
 import PageTransition from "@/components/PageTransition";
 import VisitTracker from "@/components/VisitTracker";
-import BlogPet from "@/components/BlogPet";
+import CloudCompanion from "@/components/CloudCompanion";
 import StarField from "@/components/StarField";
 
 const fontSans = Inter({
@@ -55,7 +55,7 @@ export default function RootLayout({
             <PageTransition>{children}</PageTransition>
             <VisitTracker />
             <StarField />
-            <BlogPet />
+            <CloudCompanion />
           </AuthProvider>
         </ThemeProvider>
       </body>

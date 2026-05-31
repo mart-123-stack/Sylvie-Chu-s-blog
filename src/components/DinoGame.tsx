@@ -67,7 +67,7 @@ export default function DinoGame() {
   }, [charId]);
 
   const g = useRef({
-    player: { x: 55, y: GROUND_Y, vy: 0, w: 32, h: 42, grounded: true, legPhase: 0 },
+    player: { x: 55, y: GROUND_Y, vy: 0, w: 36, h: 48, grounded: true, legPhase: 0 },
     cacti: [] as Cactus[],
     snakes: [] as Snake[],
     coins: [] as Coin[],
@@ -448,7 +448,7 @@ export default function DinoGame() {
         ctx.fillStyle = "#0369a1";
         ctx.font = "bold 22px system-ui, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("小蓝和她的朋友们", W / 2, H / 2 - 16);
+        ctx.fillText("Sky Dash", W / 2, H / 2 - 16);
         ctx.font = "14px system-ui, sans-serif";
         ctx.fillStyle = "#475569";
         ctx.fillText("Press Space / Tap to Start", W / 2, H / 2 + 18);
@@ -478,7 +478,7 @@ export default function DinoGame() {
       <div className="px-6 pt-5 pb-3 border-b border-sky-100 dark:border-slate-700 flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-sky-900 dark:text-white">
-            🏃‍♂️ 小蓝和她的朋友们
+            ☁️ Sky Dash
           </h3>
           <p className="text-sm text-foreground/50 mt-0.5">
             Jump over cacti &amp; snakes, collect 🪙 coins
