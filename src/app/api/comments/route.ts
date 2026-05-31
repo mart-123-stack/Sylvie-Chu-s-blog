@@ -102,13 +102,22 @@ export async function POST(request: NextRequest) {
         [newComment.id, newComment.post_slug, newComment.author_name, newComment.content, user_id, parent_id || null]
       );
       if (result.rows.length > 0) {
-        return NextResponse.json(result.rows[0], { status: 201 });
+        // Attach user data for the response
+        const row = result.rows[0];
+        return NextResponse.json({
+          ...row,
+          nickname: user?.nickname || author_name,
+          avatar_url: user?.avatar_url || null,
+        }, { status: 201 });
       }
     } catch (error) {
       console.error('DB comment insert failed:', error);
     }
 
-    return NextResponse.json(newComment, { status: 201 });
+    return NextResponse.json({
+      ...newComment,
+      nickname: user?.nickname || author_name,
+    }, { status: 201 });
   } catch (error) {
     console.error('Failed to create comment:', error);
     return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 });

@@ -13,6 +13,39 @@ interface Comment {
   user_id?: string | null;
   parent_id?: string | null;
   nickname?: string;
+  avatar_url?: string;
+}
+
+/** Avatar circle with image or initial fallback */
+function UserAvatar({ src, name, userId }: { src?: string; name: string; userId?: string | null }) {
+  const img = (
+    <div className="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-gradient-to-br from-primary to-accent ring-2 ring-white dark:ring-slate-800">
+      {src ? (
+        <img src={src} alt={name} className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-white text-xs font-bold">
+          {name.charAt(0).toUpperCase()}
+        </div>
+      )}
+    </div>
+  );
+
+  if (userId) {
+    return <Link href={`/user/${userId}`}>{img}</Link>;
+  }
+  return img;
+}
+
+/** User name link or plain text */
+function UserName({ name, userId }: { name: string; userId?: string | null }) {
+  if (userId) {
+    return (
+      <Link href={`/user/${userId}`} className="font-semibold text-sky-900 dark:text-white hover:text-sky-600 dark:hover:text-sky-400 transition-colors">
+        {name}
+      </Link>
+    );
+  }
+  return <span className="font-semibold text-sky-900 dark:text-white">{name}</span>;
 }
 
 export default function CommentSection({ postSlug }: { postSlug: string }) {
@@ -157,15 +190,16 @@ export default function CommentSection({ postSlug }: { postSlug: string }) {
             <div key={comment.id}>
               <div className="bg-sky-50/50 dark:bg-sky-900/20 rounded-lg p-4 border border-sky-100 dark:border-sky-800">
                 <div className="flex justify-between items-start">
-                  <div>
-                    <span className="font-semibold text-sky-900 dark:text-white">
-                      {displayName(comment)}
-                    </span>
-                    {comment.user_id && (
-                      <span className="ml-2 text-xs bg-sky-200 dark:bg-sky-700 text-sky-700 dark:text-sky-300 px-1.5 py-0.5 rounded">
-                        user
-                      </span>
-                    )}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <UserAvatar src={comment.avatar_url} name={displayName(comment)} userId={comment.user_id} />
+                    <div className="min-w-0">
+                      <UserName name={displayName(comment)} userId={comment.user_id} />
+                      {comment.user_id && (
+                        <span className="ml-2 text-xs bg-sky-200 dark:bg-sky-700 text-sky-700 dark:text-sky-300 px-1.5 py-0.5 rounded">
+                          user
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-gray-400 text-xs">
@@ -198,9 +232,10 @@ export default function CommentSection({ postSlug }: { postSlug: string }) {
                   {getReplies(comment.id).map((reply) => (
                     <div key={reply.id} className="bg-sky-50/30 dark:bg-sky-900/10 rounded-lg p-3 border border-sky-100 dark:border-sky-800">
                       <div className="flex justify-between items-start">
-                        <span className="font-semibold text-sky-900 dark:text-white text-sm">
-                          {displayName(reply)}
-                        </span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <UserAvatar src={reply.avatar_url} name={displayName(reply)} userId={reply.user_id} />
+                          <UserName name={displayName(reply)} userId={reply.user_id} />
+                        </div>
                         <span className="text-gray-400 text-xs">
                           {new Date(reply.created_at).toLocaleDateString()}
                         </span>
