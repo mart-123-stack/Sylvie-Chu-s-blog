@@ -11,7 +11,7 @@ export default async function GalleryPage() {
     <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-slate-900 dark:to-indigo-950">
 
       <main className="max-w-6xl mx-auto px-4 py-12">
-        <h2 className="text-4xl font-bold text-sky-900 dark:text-white mb-8">Photo Gallery</h2>
+        <h2 className="text-5xl font-bold leading-tight tracking-tight text-sky-900 dark:text-white mb-8">Photo Gallery</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {photos.map((photo, i) => (

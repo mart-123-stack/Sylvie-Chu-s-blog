@@ -9,6 +9,26 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'serif'],
+        mono: ['var(--font-mono)', 'Menlo', 'monospace'],
+      },
+      typography: {
+        DEFAULT: {
+          css: {
+            fontFamily: 'var(--font-sans), system-ui, sans-serif',
+            fontSize: '1.0625rem',
+            lineHeight: '1.75',
+            maxWidth: '65ch',
+            'h1, h2, h3, h4': {
+              fontFamily: 'var(--font-serif), Georgia, serif',
+              fontWeight: '700',
+              letterSpacing: '-0.02em',
+            },
+          },
+        },
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",

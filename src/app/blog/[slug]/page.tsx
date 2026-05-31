@@ -47,7 +47,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
         <AnimatedSection animation="fade-in-up" delay={100}>
           <article className="bg-white/90 rounded-xl shadow-lg shadow-sky-100 p-8 border border-sky-100 dark:bg-slate-800/90 dark:border-slate-700 dark:shadow-slate-900/30">
-            <h1 className="text-4xl font-bold text-sky-900 mb-4 dark:text-white">
+            <h1 className="text-5xl font-bold text-sky-900 mb-6 leading-tight tracking-tight dark:text-white">
               {post.title}
             </h1>
             <div className="flex flex-wrap items-center gap-2 text-foreground/40 mb-6">
@@ -67,7 +67,9 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               )}
             </div>
 
-            <MarkdownRenderer content={post.content} />
+            <div className="prose-readable mx-auto">
+              <MarkdownRenderer content={post.content} />
+            </div>
 
             <LikeFavoriteBar postSlug={params.slug} />
             <CommentSection postSlug={params.slug} />

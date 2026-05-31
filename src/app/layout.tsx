@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme-context";
@@ -6,6 +7,24 @@ import SiteHeader from "@/components/SiteHeader";
 import VisitTracker from "@/components/VisitTracker";
 import BlogPet from "@/components/BlogPet";
 import StarField from "@/components/StarField";
+
+const fontSans = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+});
+
+const fontSerif = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-serif',
+  display: 'swap',
+});
+
+const fontMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -28,7 +47,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased">
+      <body className={`antialiased ${fontSans.variable} ${fontSerif.variable} ${fontMono.variable}`}>
         <ThemeProvider>
           <AuthProvider>
             <SiteHeader />

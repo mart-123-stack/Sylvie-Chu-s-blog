@@ -12,7 +12,7 @@ export default async function AboutPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-12">
         <AnimatedSection animation="fade-in-up">
-          <h2 className="text-4xl font-bold text-primary-dark mb-8 dark:text-white">About Me</h2>
+          <h2 className="text-5xl font-bold leading-tight tracking-tight text-primary-dark mb-8 dark:text-white">About Me</h2>
         </AnimatedSection>
 
         <AnimatedSection animation="fade-in-up" delay={100}>
@@ -26,7 +26,7 @@ export default async function AboutPage() {
                 )}
               </div>
               <div className="ml-6">
-                <h3 className="text-2xl font-semibold text-primary-dark dark:text-white">{config.name}</h3>
+                <h3 className="text-2xl font-semibold leading-tight text-primary-dark dark:text-white">{config.name}</h3>
                 <p className="text-foreground/60">{config.title}</p>
                 <p className="text-foreground/40 mt-2">{config.location}</p>
               </div>
@@ -34,7 +34,7 @@ export default async function AboutPage() {
 
             <AnimatedSection animation="fade-in-up" delay={200}>
               <div className="mb-8">
-                <h4 className="text-xl font-semibold text-primary-dark mb-4 dark:text-white">Bio</h4>
+                <h4 className="text-xl font-semibold leading-snug text-primary-dark mb-4 dark:text-white">Bio</h4>
                 <p className="text-foreground/70 whitespace-pre-wrap">
                   {config.bio}
                 </p>
@@ -43,7 +43,7 @@ export default async function AboutPage() {
 
             <AnimatedSection animation="fade-in-up" delay={300}>
               <div className="mb-8">
-                <h4 className="text-xl font-semibold text-primary-dark mb-4 dark:text-white">Skills</h4>
+                <h4 className="text-xl font-semibold leading-snug text-primary-dark mb-4 dark:text-white">Skills</h4>
                 <div className="flex flex-wrap gap-2">
                   {config.skills.map((skill: string, index: number) => (
                     <span key={index} className="px-3 py-1 bg-sky-100 text-sky-700 rounded-full text-sm dark:bg-sky-900 dark:text-sky-300">
@@ -56,7 +56,7 @@ export default async function AboutPage() {
 
             <AnimatedSection animation="fade-in-up" delay={400}>
               <div>
-                <h4 className="text-xl font-semibold text-primary-dark mb-4 dark:text-white">Experience</h4>
+                <h4 className="text-xl font-semibold leading-snug text-primary-dark mb-4 dark:text-white">Experience</h4>
                 <div className="space-y-4">
                   {config.experience.map((exp: any, index: number) => (
                     <div key={index} className="border-l-4 border-primary pl-4 dark:border-sky-400">

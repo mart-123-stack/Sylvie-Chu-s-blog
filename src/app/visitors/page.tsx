@@ -16,7 +16,7 @@ export default function VisitorsPage() {
       <main className="max-w-5xl mx-auto px-4 py-12">
         <AnimatedSection animation="fade-in-up">
           <div className="mb-8">
-            <h2 className="text-4xl font-bold text-sky-900 dark:text-white mb-2">Visitor Map</h2>
+            <h2 className="text-5xl font-bold leading-tight tracking-tight text-sky-900 dark:text-white mb-2">Visitor Map</h2>
             <p className="text-foreground/60">
               A live glimpse of readers around the world. Each dot represents a visit.
             </p>

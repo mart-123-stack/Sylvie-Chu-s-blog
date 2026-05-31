@@ -32,7 +32,7 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
       <main className="max-w-4xl mx-auto px-4 py-12">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
-          <h2 className="text-4xl font-bold text-sky-900 dark:text-white">Blog Posts</h2>
+          <h2 className="text-5xl font-bold leading-tight tracking-tight text-sky-900 dark:text-white">Blog Posts</h2>
           <BlogSearchBar initialSearch={search} />
         </div>
 
