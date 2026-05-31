@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import VisitorMap from "@/components/VisitorMap";
 import AnimatedSection from "@/components/AnimatedSection";
+import SiteFooter from "@/components/SiteFooter";
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function VisitorsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-100 via-blue-100 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950">
 
       <main className="max-w-5xl mx-auto px-4 py-12">
         <AnimatedSection animation="fade-in-up">
@@ -28,7 +29,7 @@ export default function VisitorsPage() {
         </AnimatedSection>
 
         <AnimatedSection animation="fade-in-up" delay={200}>
-          <div className="mt-8 bg-white/80 dark:bg-slate-800/80 rounded-xl p-6 border border-sky-100 dark:border-slate-700 text-sm text-foreground/50">
+          <div className="mt-8 glass-card rounded-xl p-6 text-sm text-foreground/50">
             <p>
               🌐 IP geolocation data is approximate. Only country and city are stored — no personally identifiable information.
               Bot traffic is filtered out. Stats update in real time.
@@ -36,6 +37,8 @@ export default function VisitorsPage() {
           </div>
         </AnimatedSection>
       </main>
+
+      <SiteFooter />
     </div>
   );
 }

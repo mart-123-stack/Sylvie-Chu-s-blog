@@ -5,16 +5,17 @@
 @import 'highlight.js/styles/github-dark.css';
 
 :root {
-  --background: #dbeafe;
-  --foreground: #1e3a5f;
+  --background: #f0f5ff;
+  --foreground: #334155;
   --primary: #38bdf8;
   --primary-light: #7dd3fc;
-  --primary-dark: #0369a1;
+  --primary-dark: #0284c7;
   --accent: #60a5fa;
+  --accent-warm: #f59e0b;
   --surface: #ffffff;
-  --surface-hover: #e0f2fe;
+  --surface-hover: #f0f9ff;
   --muted: #94a3b8;
-  --border: #bae6fd;
+  --border: #e2e8f0;
 }
 
 .dark {
@@ -157,4 +158,115 @@ code, pre {
   50% { transform: scale(0.9); }
   70% { transform: scale(1.05); }
   100% { transform: scale(1); }
+}
+
+/* Page enter transition (between route changes) */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-page-enter {
+  animation: page-enter 0.35s ease-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.15);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.3);
+}
+
+/* Selection color */
+::selection {
+  background: rgba(56, 189, 248, 0.25);
+  color: inherit;
+}
+.dark ::selection {
+  background: rgba(56, 189, 248, 0.35);
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Nav link hover underline */
+.nav-link {
+  position: relative;
+  padding-bottom: 2px;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Glassmorphism card base */
+.glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.02),
+    0 4px 12px rgba(0, 0, 0, 0.03),
+    0 12px 32px -4px rgba(56, 189, 248, 0.06);
+}
+
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.35);
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.glass-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-hover:hover {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(56, 189, 248, 0.3);
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.02),
+    0 8px 16px rgba(0, 0, 0, 0.04),
+    0 16px 40px -4px rgba(56, 189, 248, 0.12);
+}
+
+.dark .glass-card-hover:hover {
+  background: rgba(15, 23, 42, 0.55);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    0 16px 40px rgba(0, 0, 0, 0.15);
 }

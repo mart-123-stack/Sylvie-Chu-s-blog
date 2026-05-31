@@ -1,15 +1,28 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useTheme } from '@/lib/theme-context';
 
 export default function SiteHeader() {
   const { user, token, isAdmin, authLoaded } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
-    <nav className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-sky-100 dark:bg-slate-900/80 dark:border-slate-700">
+    <nav className={`sticky top-0 z-50 transition-all duration-300 ${
+      scrolled
+        ? 'bg-white/90 backdrop-blur-md shadow-md border-b border-sky-100 dark:bg-slate-900/90 dark:border-slate-700'
+        : 'bg-white/80 backdrop-blur-sm shadow-sm border-b border-sky-100/60 dark:bg-slate-900/80 dark:border-slate-700/60'
+    }`}>
       <div className="max-w-6xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-sky-900 dark:text-white">
@@ -23,11 +36,11 @@ export default function SiteHeader() {
             <span>Sylive Chu&apos;s Blog</span>
           </Link>
           <div className="flex items-center space-x-6">
-            <Link href="/" className="text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition">Home</Link>
-            <Link href="/blog" className="text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition">Blog</Link>
-            <Link href="/about" className="text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition">About</Link>
-            <Link href="/gallery" className="text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition">Gallery</Link>
-            <Link href="/visitors" className="text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition">Visitors</Link>
+            <Link href="/" className="nav-link text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition-colors">Home</Link>
+            <Link href="/blog" className="nav-link text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition-colors">Blog</Link>
+            <Link href="/about" className="nav-link text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition-colors">About</Link>
+            <Link href="/gallery" className="nav-link text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition-colors">Gallery</Link>
+            <Link href="/visitors" className="nav-link text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition-colors">Visitors</Link>
             {authLoaded && (token || user) ? (
               <>
                 {isAdmin ? (

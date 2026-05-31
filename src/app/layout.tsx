@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import SiteHeader from "@/components/SiteHeader";
+import PageTransition from "@/components/PageTransition";
 import VisitTracker from "@/components/VisitTracker";
 import BlogPet from "@/components/BlogPet";
 import StarField from "@/components/StarField";
@@ -51,7 +52,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <SiteHeader />
-            {children}
+            <PageTransition>{children}</PageTransition>
             <VisitTracker />
             <StarField />
             <BlogPet />

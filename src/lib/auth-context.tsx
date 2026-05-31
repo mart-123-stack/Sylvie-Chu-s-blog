@@ -7,6 +7,8 @@ interface User {
   email: string;
   nickname: string;
   avatar_url?: string;
+  bio?: string;
+  location?: string;
 }
 
 interface AuthContextType {
@@ -18,6 +20,7 @@ interface AuthContextType {
   register: (email: string, password: string, nickname: string) => Promise<string | null>;
   adminLogin: (password: string) => Promise<string | null>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -90,6 +93,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    const t = localStorage.getItem('token');
+    if (!t) return;
+    try {
+      const res = await fetch('/api/profile', {
+        headers: { Authorization: `Bearer ${t}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+        localStorage.setItem('user', JSON.stringify(data.user));
+      }
+    } catch {}
+  }, []);
+
   const logout = useCallback(() => {
     setUser(null);
     setToken(null);
@@ -100,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, isAdmin, authLoaded, login, register, adminLogin, logout }}>
+    <AuthContext.Provider value={{ user, token, isAdmin, authLoaded, login, register, adminLogin, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

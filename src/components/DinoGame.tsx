@@ -474,7 +474,7 @@ export default function DinoGame() {
   }, [best]);
 
   return (
-    <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg shadow-sky-100 border border-sky-100 dark:bg-slate-800/90 dark:border-slate-700 dark:shadow-slate-900/30">
+    <div className="glass-card rounded-xl">
       <div className="px-6 pt-5 pb-3 border-b border-sky-100 dark:border-slate-700 flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-sky-900 dark:text-white">

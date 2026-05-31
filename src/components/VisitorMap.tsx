@@ -187,19 +187,19 @@ export default function VisitorMap() {
     <div className="space-y-6">
       {/* Stats cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white/90 dark:bg-slate-800/90 rounded-xl p-4 border border-sky-100 dark:border-slate-700">
+        <div className="glass-card rounded-xl p-4">
           <p className="text-2xl font-bold text-sky-700 dark:text-sky-300">{stats?.total ?? '-'}</p>
           <p className="text-sm text-foreground/60">Total Visits</p>
         </div>
-        <div className="bg-white/90 dark:bg-slate-800/90 rounded-xl p-4 border border-sky-100 dark:border-slate-700">
+        <div className="glass-card rounded-xl p-4">
           <p className="text-2xl font-bold text-amber-500">{stats?.today ?? '-'}</p>
           <p className="text-sm text-foreground/60">Today</p>
         </div>
-        <div className="bg-white/90 dark:bg-slate-800/90 rounded-xl p-4 border border-sky-100 dark:border-slate-700">
+        <div className="glass-card rounded-xl p-4">
           <p className="text-2xl font-bold text-emerald-500">{stats?.countries?.length ?? '-'}</p>
           <p className="text-sm text-foreground/60">Countries</p>
         </div>
-        <div className="bg-white/90 dark:bg-slate-800/90 rounded-xl p-4 border border-sky-100 dark:border-slate-700">
+        <div className="glass-card rounded-xl p-4">
           <p className="text-2xl font-bold text-purple-400">{stats?.recentVisitors?.length ?? '-'}</p>
           <p className="text-sm text-foreground/60">Recent Visitors</p>
         </div>
@@ -237,7 +237,7 @@ export default function VisitorMap() {
 
       {/* Country list */}
       {stats && stats.countries.length > 0 && (
-        <div className="bg-white/90 dark:bg-slate-800/90 rounded-xl p-4 border border-sky-100 dark:border-slate-700">
+        <div className="glass-card rounded-xl p-4">
           <h3 className="text-sm font-semibold text-foreground/80 mb-3">From all over the world</h3>
           <div className="flex flex-wrap gap-2">
             {stats.countries.map(c => (

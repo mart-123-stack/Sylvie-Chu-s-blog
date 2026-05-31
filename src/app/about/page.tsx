@@ -1,5 +1,6 @@
 import { getAboutConfig } from "@/lib/config";
 import AnimatedSection from "@/components/AnimatedSection";
+import SiteFooter from "@/components/SiteFooter";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -8,7 +9,7 @@ export default async function AboutPage() {
   const config = await getAboutConfig();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-100 via-blue-100 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950">
 
       <main className="max-w-4xl mx-auto px-4 py-12">
         <AnimatedSection animation="fade-in-up">
@@ -16,7 +17,7 @@ export default async function AboutPage() {
         </AnimatedSection>
 
         <AnimatedSection animation="fade-in-up" delay={100}>
-          <div className="bg-white/90 rounded-xl shadow-lg shadow-sky-100 p-8 border border-sky-100 dark:bg-slate-800/90 dark:border-slate-700 dark:shadow-slate-900/30">
+          <div className="glass-card rounded-xl p-8">
             <div className="flex items-center mb-8">
               <div className="w-32 h-32 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                 {config.avatar ? (
@@ -72,11 +73,7 @@ export default async function AboutPage() {
         </AnimatedSection>
       </main>
 
-      <footer className="bg-white/80 backdrop-blur-sm mt-12 py-6 border-t border-sky-100 dark:bg-slate-900/80 dark:border-slate-700">
-        <div className="max-w-6xl mx-auto px-4 text-center text-foreground/50">
-          <p>&copy; {new Date().getFullYear()} Personal Blog. All rights reserved.</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

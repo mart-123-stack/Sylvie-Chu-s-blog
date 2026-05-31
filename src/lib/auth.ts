@@ -13,7 +13,12 @@ export interface UserPayload {
 }
 
 export async function signToken(user: UserPayload): Promise<string> {
-  return new SignJWT({ sub: user.id, email: user.email, nickname: user.nickname })
+  return new SignJWT({
+    sub: user.id,
+    email: user.email,
+    nickname: user.nickname,
+    avatar_url: user.avatar_url || null,
+  })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d')
@@ -27,7 +32,21 @@ export async function verifyToken(token: string): Promise<UserPayload | null> {
       id: payload.sub as string,
       email: payload.email as string,
       nickname: payload.nickname as string,
+      avatar_url: payload.avatar_url as string | undefined,
     };
+  } catch {
+    return null;
+  }
+}
+
+export async function getUserById(id: string): Promise<UserPayload | null> {
+  try {
+    const result = await query(
+      'SELECT id, email, nickname, avatar_url, bio FROM users WHERE id = $1 LIMIT 1',
+      [id]
+    );
+    if (result.rows.length === 0) return null;
+    return result.rows[0];
   } catch {
     return null;
   }
