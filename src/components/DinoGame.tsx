@@ -305,113 +305,231 @@ export default function DinoGame() {
       ctx.scale(SCALE, SCALE);
       ctx.clearRect(0, 0, W, H);
 
-      // Sky
-      const grad = ctx.createLinearGradient(0, 0, 0, H);
-      grad.addColorStop(0, "#e0f2fe");
-      grad.addColorStop(1, "#bae6fd");
-      ctx.fillStyle = grad;
+      // Sky gradient
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+      skyGrad.addColorStop(0, "#dbeafe");
+      skyGrad.addColorStop(0.5, "#e0f2fe");
+      skyGrad.addColorStop(1, "#f0f9ff");
+      ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, W, H);
 
-      // Clouds
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      // Distant mountains
+      ctx.fillStyle = "rgba(148, 163, 184, 0.12)";
+      ctx.beginPath();
+      ctx.moveTo(0, GROUND_Y);
+      for (let x = 0; x <= W; x += 8) {
+        const y = GROUND_Y - 22 - Math.sin(x * 0.005) * 18 - Math.sin(x * 0.013) * 10 - Math.sin(x * 0.025) * 5;
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(W, GROUND_Y);
+      ctx.closePath();
+      ctx.fill();
+
+      // Second mountain range (closer, slightly darker)
+      ctx.fillStyle = "rgba(148, 163, 184, 0.08)";
+      ctx.beginPath();
+      ctx.moveTo(0, GROUND_Y);
+      for (let x = 0; x <= W; x += 8) {
+        const y = GROUND_Y - 14 - Math.sin(x * 0.008 + 1) * 12 - Math.sin(x * 0.02 + 3) * 6;
+        ctx.lineTo(x, y);
+      }
+      ctx.lineTo(W, GROUND_Y);
+      ctx.closePath();
+      ctx.fill();
+
+      // Clouds — fluffy multi-circle
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
       for (const c of s.clouds) {
         ctx.beginPath();
-        ctx.ellipse(c.x + c.w / 2, c.y, c.w / 2, 12, 0, 0, Math.PI * 2);
+        ctx.arc(c.x + c.w * 0.25, c.y + 3, 10, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
-        ctx.ellipse(c.x + c.w * 0.3, c.y - 6, c.w * 0.3, 9, 0, 0, Math.PI * 2);
+        ctx.arc(c.x + c.w * 0.75, c.y + 3, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(c.x + c.w * 0.5, c.y - 1, 13, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // Ground
-      ctx.strokeStyle = "#94a3b8";
-      ctx.lineWidth = 2;
+      // Ground — grass strip + dirt
+      ctx.fillStyle = "#86efac";
+      ctx.fillRect(0, GROUND_Y - 2, W, 5);
+      const groundGrad = ctx.createLinearGradient(0, GROUND_Y, 0, H);
+      groundGrad.addColorStop(0, "#cbd5e1");
+      groundGrad.addColorStop(1, "#94a3b8");
+      ctx.fillStyle = groundGrad;
+      ctx.fillRect(0, GROUND_Y + 3, W, H - GROUND_Y - 3);
+
+      // Ground line shadow
+      ctx.strokeStyle = "rgba(0,0,0,0.06)";
+      ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(0, GROUND_Y);
-      ctx.lineTo(W, GROUND_Y);
+      ctx.moveTo(0, GROUND_Y + 1);
+      ctx.lineTo(W, GROUND_Y + 1);
       ctx.stroke();
 
-      ctx.strokeStyle = "#cbd5e1";
+      // Ground dashes
+      ctx.strokeStyle = "rgba(0,0,0,0.06)";
       ctx.lineWidth = 1.5;
-      for (let x = s.groundOffset; x < W; x += 20) {
+      ctx.setLineDash([15, 10]);
+      ctx.beginPath();
+      ctx.moveTo(s.groundOffset % 25, GROUND_Y + 10);
+      ctx.lineTo(W, GROUND_Y + 10);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // --- Cacti — rounded with arms ---
+      for (const c of s.cacti) {
+        const cy = GROUND_Y - c.h;
+
+        // Main body — rounded rect
+        ctx.fillStyle = "#059669";
         ctx.beginPath();
-        ctx.moveTo(x, GROUND_Y + 6);
-        ctx.lineTo(x + 10, GROUND_Y + 6);
+        const r = 4;
+        ctx.moveTo(c.x + r, cy);
+        ctx.lineTo(c.x + c.w - r, cy);
+        ctx.quadraticCurveTo(c.x + c.w, cy, c.x + c.w, cy + r);
+        ctx.lineTo(c.x + c.w, cy + c.h);
+        ctx.lineTo(c.x, cy + c.h);
+        ctx.lineTo(c.x, cy + r);
+        ctx.quadraticCurveTo(c.x, cy, c.x + r, cy);
+        ctx.closePath();
+        ctx.fill();
+
+        // Highlight
+        ctx.fillStyle = "rgba(255,255,255,0.12)";
+        ctx.fillRect(c.x + 2, cy + 3, 3, c.h - 6);
+
+        // Left arm
+        ctx.fillRect(c.x - 3, cy + 6, 4, 8);
+        ctx.beginPath();
+        ctx.arc(c.x - 2, cy + 6, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Right arm
+        ctx.fillRect(c.x + c.w - 1, cy + 10, 4, 8);
+        ctx.beginPath();
+        ctx.arc(c.x + c.w + 1, cy + 10, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Top flower (random)
+        if (c.h > 35) {
+          ctx.fillStyle = "#FBBF24";
+          ctx.beginPath();
+          for (let i = 0; i < 5; i++) {
+            const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+            const fx = c.x + c.w / 2 + Math.cos(angle) * 3;
+            const fy = cy - 2 + Math.sin(angle) * 3;
+            ctx.lineTo(fx, fy);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = "#F59E0B";
+          ctx.beginPath();
+          ctx.arc(c.x + c.w / 2, cy - 2, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // --- Snakes — smooth animated body ---
+      for (const sn of s.snakes) {
+        const snY = GROUND_Y - sn.h;
+        const wave = Math.sin(s.frame * 0.06) * 4;
+
+        // Body — smooth path
+        ctx.strokeStyle = "#047857";
+        ctx.lineWidth = sn.h * 0.7;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        for (let i = 0; i < sn.w; i += 3) {
+          const sx = sn.x + i;
+          const sy = snY + 3 + Math.sin(i * 0.08 + s.frame * 0.04) * wave;
+          if (i === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+
+        // Head
+        const headX = sn.x + sn.w - 2;
+        const headY = snY + 3 + Math.sin(sn.w * 0.08 + s.frame * 0.04) * wave;
+        ctx.fillStyle = "#065f46";
+        ctx.beginPath();
+        ctx.arc(headX, headY, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyes
+        ctx.fillStyle = "#FFF";
+        ctx.beginPath();
+        ctx.arc(headX + 2, headY - 1.5, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(headX + 2, headY + 1.5, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#1e293b";
+        ctx.beginPath();
+        ctx.arc(headX + 3, headY - 1.5, 1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(headX + 3, headY + 1.5, 1, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Tongue
+        ctx.strokeStyle = "#ef4444";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(headX + 5, headY);
+        ctx.lineTo(headX + 10, headY - 1);
+        ctx.moveTo(headX + 10, headY - 1);
+        ctx.lineTo(headX + 9, headY - 2);
+        ctx.moveTo(headX + 10, headY - 1);
+        ctx.lineTo(headX + 9, headY);
         ctx.stroke();
       }
 
-      // --- Cacti ---
-      for (const c of s.cacti) {
-        ctx.fillStyle = "#059669";
-        const r = 3;
-        const cx = c.x,
-          cy = GROUND_Y - c.h;
-        ctx.beginPath();
-        ctx.moveTo(cx + r, cy);
-        ctx.lineTo(cx + c.w - r, cy);
-        ctx.quadraticCurveTo(cx + c.w, cy, cx + c.w, cy + r);
-        ctx.lineTo(cx + c.w, cy + c.h);
-        ctx.lineTo(cx, cy + c.h);
-        ctx.lineTo(cx, cy + r);
-        ctx.quadraticCurveTo(cx, cy, cx + r, cy);
-        ctx.fill();
-        ctx.fillRect(cx - 3, cy + 6, 4, 9);
-        ctx.fillRect(cx + c.w - 1, cy + 10, 4, 9);
-      }
-
-      // --- Snakes ---
-      for (const sn of s.snakes) {
-        const snY = GROUND_Y - sn.h;
-        const wave = Math.sin(s.frame * 0.08) * 3;
-        // Body segments
-        const segs = Math.floor(sn.w / 6);
-        for (let i = 0; i < segs; i++) {
-          const sx = sn.x + i * 6 + wave * Math.sin(i * 0.8);
-          const syY = snY + 2 + Math.sin(i * 0.5 + s.frame * 0.05) * 2;
-          ctx.fillStyle = i === segs - 1 ? "#065f46" : "#047857";
-          ctx.beginPath();
-          ctx.arc(sx + 3, syY + 4, 5, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        // Head
-        ctx.fillStyle = "#065f46";
-        ctx.fillRect(sn.x + sn.w - 6, snY - 2, 10, 9);
-        // Eyes
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(sn.x + sn.w - 3, snY + 1, 3, 3);
-        ctx.fillStyle = "#1e293b";
-        ctx.fillRect(sn.x + sn.w - 2, snY + 2, 2, 2);
-      }
-
-      // --- Coins ---
+      // --- Coins — star-shaped with glow ---
       for (const coin of s.coins) {
         if (coin.collected) continue;
         const bob = Math.sin(s.frame * 0.06 + coin.x) * 3;
         const cy = coin.y + bob;
-        const pulse = 1 + Math.sin(s.frame * 0.08 + coin.x) * 0.15;
+        const pulse = 1 + Math.sin(s.frame * 0.08 + coin.x) * 0.12;
+
+        const radius = coin.r * pulse;
 
         // Glow
+        const glow = ctx.createRadialGradient(coin.x, cy, 0, coin.x, cy, radius + 6);
+        glow.addColorStop(0, "rgba(251, 191, 36, 0.3)");
+        glow.addColorStop(1, "rgba(251, 191, 36, 0)");
+        ctx.fillStyle = glow;
         ctx.beginPath();
-        ctx.arc(coin.x, cy, coin.r * pulse + 4, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(251, 191, 36, 0.25)";
+        ctx.arc(coin.x, cy, radius + 6, 0, Math.PI * 2);
         ctx.fill();
 
-        // Coin body
-        ctx.beginPath();
-        ctx.arc(coin.x, cy, coin.r * pulse, 0, Math.PI * 2);
+        // Star shape
         ctx.fillStyle = "#FBBF24";
+        ctx.beginPath();
+        for (let i = 0; i < 10; i++) {
+          const angle = (i * Math.PI * 2) / 10 - Math.PI / 2;
+          const r2 = i % 2 === 0 ? radius : radius * 0.45;
+          const sx = coin.x + Math.cos(angle) * r2;
+          const sy = cy + Math.sin(angle) * r2;
+          if (i === 0) ctx.moveTo(sx, sy);
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.closePath();
         ctx.fill();
-        ctx.strokeStyle = "#F59E0B";
-        ctx.lineWidth = 2;
-        ctx.stroke();
 
-        // $ symbol
-        ctx.fillStyle = "#B45309";
-        ctx.font = "bold 10px system-ui, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("$", coin.x, cy + 0.5);
+        // Center sparkle
+        ctx.fillStyle = "#FEF3C7";
+        ctx.beginPath();
+        ctx.arc(coin.x, cy, radius * 0.2, 0, Math.PI * 2);
+        ctx.fill();
       }
+
+      // --- Character shadow on ground ---
+      ctx.fillStyle = "rgba(0,0,0,0.08)";
+      ctx.beginPath();
+      ctx.ellipse(p.x + p.w / 2, p.y + 2, 14, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
 
       // --- Character ---
       drawFnRef.current(
@@ -424,45 +542,81 @@ export default function DinoGame() {
         p.grounded
       );
 
-      // --- HUD ---
+      // --- HUD (with background) ---
+      // Score
+      const hudW = Math.min(W - 20, 110);
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.beginPath();
+      ctx.roundRect(W - hudW - 8, 8, hudW, best > 0 ? 48 : 28, 8);
+      ctx.fill();
+
       ctx.fillStyle = "#0369a1";
-      ctx.font = "bold 15px system-ui, sans-serif";
+      ctx.font = "bold 14px system-ui, sans-serif";
       ctx.textAlign = "right";
-      ctx.fillText(`Score: ${s.score}`, W - 16, 28);
-      // Coin count
-      if (s.coinsCollected > 0) {
-        ctx.fillStyle = "#F59E0B";
-        ctx.font = "bold 13px system-ui, sans-serif";
-        ctx.fillText(`🪙 ${s.coinsCollected}`, W - 16, 48);
-      }
+      ctx.textBaseline = "top";
+      ctx.fillText(`★ ${s.score.toLocaleString()}`, W - 14, 14);
       if (best > 0) {
         ctx.fillStyle = "#94a3b8";
-        ctx.font = "12px system-ui, sans-serif";
-        ctx.fillText(`Best: ${best}`, W - 16, s.coinsCollected > 0 ? 65 : 48);
+        ctx.font = "11px system-ui, sans-serif";
+        ctx.fillText(`Best ${best.toLocaleString()}`, W - 14, 34);
       }
+
+      if (s.coinsCollected > 0) {
+        ctx.fillStyle = "#F59E0B";
+        ctx.font = "bold 12px system-ui, sans-serif";
+        ctx.fillText(`🪙 ${s.coinsCollected}`, W - 14, best > 0 ? 52 : 38);
+        // Widen hud
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.beginPath();
+        ctx.roundRect(W - hudW - 8, 8, hudW, best > 0 ? 68 : 48, 8);
+        ctx.fill();
+        // Re-draw text on top (simple approach)
+        ctx.fillStyle = "#0369a1";
+        ctx.font = "bold 14px system-ui, sans-serif";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "top";
+        ctx.fillText(`★ ${s.score.toLocaleString()}`, W - 14, 14);
+        if (best > 0) {
+          ctx.fillStyle = "#94a3b8";
+          ctx.font = "11px system-ui, sans-serif";
+          ctx.fillText(`Best ${best.toLocaleString()}`, W - 14, 34);
+        }
+        ctx.fillStyle = "#F59E0B";
+        ctx.font = "bold 12px system-ui, sans-serif";
+        ctx.fillText(`🪙 ${s.coinsCollected}`, W - 14, best > 0 ? 52 : 38);
+        ctx.textBaseline = "alphabetic";
+      }
+
+      ctx.textBaseline = "alphabetic";
 
       // --- Overlays ---
       if (s.frame === 0 || (!s.running && s.frame < 5)) {
-        ctx.fillStyle = "rgba(255,255,255,0.2)";
+        ctx.fillStyle = "rgba(255,255,255,0.15)";
         ctx.fillRect(0, 0, W, H);
         ctx.fillStyle = "#0369a1";
         ctx.font = "bold 22px system-ui, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("Sky Dash", W / 2, H / 2 - 16);
+        ctx.textBaseline = "middle";
+        ctx.fillText("Sky Dash", W / 2, H / 2 - 14);
         ctx.font = "14px system-ui, sans-serif";
         ctx.fillStyle = "#475569";
-        ctx.fillText("Press Space / Tap to Start", W / 2, H / 2 + 18);
+        ctx.fillText("Press Space / Tap to Start", W / 2, H / 2 + 16);
+        ctx.textBaseline = "alphabetic";
       }
 
       if (!s.running && s.frame > 5) {
-        ctx.fillStyle = "rgba(0,0,0,0.35)";
+        ctx.fillStyle = "rgba(0,0,0,0.3)";
         ctx.fillRect(0, 0, W, H);
         ctx.fillStyle = "#ffffff";
         ctx.font = "bold 24px system-ui, sans-serif";
         ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         ctx.fillText("Game Over", W / 2, H / 2 - 15);
         ctx.font = "14px system-ui, sans-serif";
-        ctx.fillText("Press Space or Tap to Restart", W / 2, H / 2 + 18);
+        ctx.fillText(`Score: ${s.score}`, W / 2, H / 2 + 14);
+        ctx.font = "13px system-ui, sans-serif";
+        ctx.fillText("Press Space or Tap to Restart", W / 2, H / 2 + 35);
+        ctx.textBaseline = "alphabetic";
       }
 
       ctx.restore();
@@ -524,7 +678,7 @@ export default function DinoGame() {
         width={Math.round(W * SCALE)}
         height={Math.round(H * SCALE)}
         className="w-full cursor-pointer select-none"
-        style={{ imageRendering: "pixelated" }}
+        style={{ background: "#f0f9ff", borderRadius: "0 0 0.75rem 0.75rem" }}
         onClick={jump}
         onTouchEnd={(e) => {
           e.preventDefault();
