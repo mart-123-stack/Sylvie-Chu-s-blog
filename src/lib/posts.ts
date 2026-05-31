@@ -16,6 +16,12 @@ export interface Post {
 
 const postsFilePath = path.join(process.cwd(), 'data', 'posts.json');
 
+function sanitizeSlug(slug: string): string {
+  let s = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  if (!s) s = `post-${Date.now()}`;
+  return s;
+}
+
 async function readLocalPosts(): Promise<Post[]> {
   try {
     const data = await fs.readFile(postsFilePath, 'utf-8');
@@ -223,6 +229,7 @@ export async function createPost(post: Omit<Post, 'id' | 'date'>): Promise<Post>
     id: Date.now().toString(),
     date: new Date().toISOString(),
     tags: post.tags || [],
+    slug: sanitizeSlug(post.slug || post.title),
   };
 
   const posts = await readLocalPosts();
@@ -280,8 +287,9 @@ export async function updatePost(id: string, updates: Partial<Post>): Promise<Po
     values.push(updates.author);
   }
   if (updates.slug !== undefined) {
+    const cleanSlug = sanitizeSlug(updates.slug);
     fields.push(`slug = $${paramIndex++}`);
-    values.push(updates.slug);
+    values.push(cleanSlug);
   }
   if (updates.published !== undefined) {
     fields.push(`published = $${paramIndex++}`);

@@ -14,6 +14,7 @@ export default function NewPostPage() {
     author: 'Admin',
     published: false,
     tags: '',
+    slug: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,10 +25,8 @@ export default function NewPostPage() {
     setError('');
 
     const token = localStorage.getItem('adminToken');
-    let slug = formData.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+    // Use the slug from the form (user-editable); backend will sanitize
+    let slug = formData.slug;
     if (!slug) slug = `post-${Date.now()}`;
 
     const tags = formData.tags
@@ -93,10 +92,34 @@ export default function NewPostPage() {
               <input
                 type="text"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) => {
+                  const title = e.target.value;
+                  // Auto-generate slug from title only if slug is empty or was auto-generated
+                  const autoSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                  setFormData(prev => ({
+                    ...prev,
+                    title,
+                    slug: prev.slug || autoSlug || `post-${Date.now()}`,
+                  }));
+                }}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                 required
               />
+            </div>
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2 font-semibold">
+                Slug
+              </label>
+              <input
+                type="text"
+                value={formData.slug}
+                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                placeholder="post-url"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500 font-mono text-sm"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                URL path for this post. Edit to customize.
+              </p>
             </div>
             <div>
               <label className="block text-gray-700 dark:text-gray-300 mb-2 font-semibold">

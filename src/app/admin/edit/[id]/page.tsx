@@ -27,6 +27,7 @@ export default function EditPostPage() {
     author: 'Admin',
     published: false,
     tags: '',
+    slug: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -51,6 +52,7 @@ export default function EditPostPage() {
           author: post.author,
           published: post.published,
           tags: (post.tags || []).join(', '),
+          slug: post.slug || '',
         });
       }
     } catch (err) {
@@ -66,11 +68,15 @@ export default function EditPostPage() {
     setError('');
 
     const token = localStorage.getItem('adminToken');
-    let slug = formData.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-    if (!slug) slug = `post-${Date.now()}`;
+    // Keep the existing slug; only regenerate if it's somehow empty
+    let slug = formData.slug;
+    if (!slug) {
+      slug = formData.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+      if (!slug) slug = `post-${Date.now()}`;
+    }
 
     const tags = formData.tags
       .split(',')
@@ -98,7 +104,8 @@ export default function EditPostPage() {
       if (response.ok) {
         router.push('/admin');
       } else {
-        setError('Failed to update post');
+        const errData = await response.json().catch(() => ({}));
+        setError('Failed to update post: ' + (errData.error || `HTTP ${response.status}`));
       }
     } catch (err) {
       setError('Failed to update post');
@@ -135,7 +142,7 @@ export default function EditPostPage() {
         <form onSubmit={handleSubmit} className="bg-white dark:bg-sky-950 rounded-lg shadow-lg shadow-sky-100 dark:shadow-sky-900/20 p-8 border border-sky-100 dark:border-sky-900">
           {error && <p className="text-red-500 mb-4">{error}</p>}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <div>
               <label className="block text-gray-700 dark:text-gray-300 mb-2 font-semibold">
                 Title
@@ -147,6 +154,20 @@ export default function EditPostPage() {
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
                 required
               />
+            </div>
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2 font-semibold">
+                Slug
+              </label>
+              <input
+                type="text"
+                value={formData.slug}
+                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-sky-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-sky-500 focus:border-sky-500 font-mono text-sm"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                URL path. Edit carefully — changing it breaks old links.
+              </p>
             </div>
             <div>
               <label className="block text-gray-700 dark:text-gray-300 mb-2 font-semibold">
