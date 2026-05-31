@@ -27,6 +27,7 @@ export default function SiteHeader() {
             <Link href="/blog" className="text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition">Blog</Link>
             <Link href="/about" className="text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition">About</Link>
             <Link href="/gallery" className="text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition">Gallery</Link>
+            <Link href="/visitors" className="text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition">Visitors</Link>
             {authLoaded && (token || user) ? (
               <>
                 {isAdmin ? (

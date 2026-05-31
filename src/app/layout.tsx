@@ -3,6 +3,8 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import SiteHeader from "@/components/SiteHeader";
+import VisitTracker from "@/components/VisitTracker";
+import BlogPet from "@/components/BlogPet";
 
 export const metadata: Metadata = {
   title: {
@@ -30,6 +32,8 @@ export default function RootLayout({
           <AuthProvider>
             <SiteHeader />
             {children}
+            <VisitTracker />
+            <BlogPet />
           </AuthProvider>
         </ThemeProvider>
       </body>
