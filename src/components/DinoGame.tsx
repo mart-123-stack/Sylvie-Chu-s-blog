@@ -4,7 +4,7 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { CHARACTERS } from "./dino-chars";
 
-const SCALE = 1.5;
+const SCALE = 3;
 const W = 700;
 const H = 250;
 const GROUND_Y = 180;
@@ -544,46 +544,27 @@ export default function DinoGame() {
 
       // --- HUD (with background) ---
       // Score
-      const hudW = Math.min(W - 20, 110);
+      const hudW = Math.min(W - 20, 100);
       ctx.fillStyle = "rgba(255,255,255,0.5)";
       ctx.beginPath();
-      ctx.roundRect(W - hudW - 8, 8, hudW, best > 0 ? 48 : 28, 8);
+      ctx.roundRect(W - hudW - 8, 8, hudW, best > 0 ? 40 : 24, 8);
       ctx.fill();
 
       ctx.fillStyle = "#0369a1";
-      ctx.font = "bold 14px system-ui, sans-serif";
+      ctx.font = "bold 10px system-ui, sans-serif";
       ctx.textAlign = "right";
       ctx.textBaseline = "top";
-      ctx.fillText(`★ ${s.score.toLocaleString()}`, W - 14, 14);
+      ctx.fillText(`★ ${s.score.toLocaleString()}`, W - 14, 12);
       if (best > 0) {
         ctx.fillStyle = "#94a3b8";
-        ctx.font = "11px system-ui, sans-serif";
-        ctx.fillText(`Best ${best.toLocaleString()}`, W - 14, 34);
+        ctx.font = "8px system-ui, sans-serif";
+        ctx.fillText(`Best ${best.toLocaleString()}`, W - 14, 28);
       }
 
       if (s.coinsCollected > 0) {
         ctx.fillStyle = "#F59E0B";
-        ctx.font = "bold 12px system-ui, sans-serif";
-        ctx.fillText(`🪙 ${s.coinsCollected}`, W - 14, best > 0 ? 52 : 38);
-        // Widen hud
-        ctx.fillStyle = "rgba(255,255,255,0.5)";
-        ctx.beginPath();
-        ctx.roundRect(W - hudW - 8, 8, hudW, best > 0 ? 68 : 48, 8);
-        ctx.fill();
-        // Re-draw text on top (simple approach)
-        ctx.fillStyle = "#0369a1";
-        ctx.font = "bold 14px system-ui, sans-serif";
-        ctx.textAlign = "right";
-        ctx.textBaseline = "top";
-        ctx.fillText(`★ ${s.score.toLocaleString()}`, W - 14, 14);
-        if (best > 0) {
-          ctx.fillStyle = "#94a3b8";
-          ctx.font = "11px system-ui, sans-serif";
-          ctx.fillText(`Best ${best.toLocaleString()}`, W - 14, 34);
-        }
-        ctx.fillStyle = "#F59E0B";
-        ctx.font = "bold 12px system-ui, sans-serif";
-        ctx.fillText(`🪙 ${s.coinsCollected}`, W - 14, best > 0 ? 52 : 38);
+        ctx.font = "9px system-ui, sans-serif";
+        ctx.fillText(`🪙 ${s.coinsCollected}`, W - 14, best > 0 ? 44 : 34);
         ctx.textBaseline = "alphabetic";
       }
 
@@ -594,13 +575,13 @@ export default function DinoGame() {
         ctx.fillStyle = "rgba(255,255,255,0.15)";
         ctx.fillRect(0, 0, W, H);
         ctx.fillStyle = "#0369a1";
-        ctx.font = "bold 22px system-ui, sans-serif";
+        ctx.font = "bold 15px system-ui, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("Sky Dash", W / 2, H / 2 - 14);
-        ctx.font = "14px system-ui, sans-serif";
+        ctx.fillText("Sky Dash", W / 2, H / 2 - 12);
+        ctx.font = "10px system-ui, sans-serif";
         ctx.fillStyle = "#475569";
-        ctx.fillText("Press Space / Tap to Start", W / 2, H / 2 + 16);
+        ctx.fillText("Press Space / Tap to Start", W / 2, H / 2 + 12);
         ctx.textBaseline = "alphabetic";
       }
 
@@ -608,14 +589,14 @@ export default function DinoGame() {
         ctx.fillStyle = "rgba(0,0,0,0.3)";
         ctx.fillRect(0, 0, W, H);
         ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 24px system-ui, sans-serif";
+        ctx.font = "bold 16px system-ui, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("Game Over", W / 2, H / 2 - 15);
-        ctx.font = "14px system-ui, sans-serif";
-        ctx.fillText(`Score: ${s.score}`, W / 2, H / 2 + 14);
-        ctx.font = "13px system-ui, sans-serif";
-        ctx.fillText("Press Space or Tap to Restart", W / 2, H / 2 + 35);
+        ctx.fillText("Game Over", W / 2, H / 2 - 14);
+        ctx.font = "10px system-ui, sans-serif";
+        ctx.fillText(`Score: ${s.score}`, W / 2, H / 2 + 6);
+        ctx.font = "9px system-ui, sans-serif";
+        ctx.fillText("Press Space or Tap to Restart", W / 2, H / 2 + 24);
         ctx.textBaseline = "alphabetic";
       }
 

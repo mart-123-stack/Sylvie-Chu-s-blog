@@ -1,416 +1,320 @@
 import React from "react";
 
-// ─── Vector-style character system ───
-// Smooth, rounded characters drawn with canvas paths
-// Not pixel art — clean anti-aliased rendering for higher visual quality
+// ─── Pixel art character system ───
+// Each character is drawn as small colored blocks (1px logical size)
+// With integer SCALE in the game canvas, each block maps to 3×3 physical pixels
 
-interface CharCtx {
-  ctx: CanvasRenderingContext2D;
-  cx: number;   // center X
-  bottom: number; // foot Y (ground level)
-  h: number;    // total height
-  legPhase: number;
-  grounded: boolean;
+type Pixel = [number, number, number, number, string]; // x, y, w, h, color
+
+function px(ctx: CanvasRenderingContext2D, blocks: Pixel[], ox: number, oy: number) {
+  for (const [x, y, w, h, color] of blocks) {
+    ctx.fillStyle = color;
+    ctx.fillRect(ox + x, oy + y, w, h);
+  }
 }
 
-// ─── Shared helpers ───
-
-function drawShadow(c: CharCtx) {
-  const { ctx, cx, bottom } = c;
-  ctx.fillStyle = "rgba(0,0,0,0.08)";
-  ctx.beginPath();
-  ctx.ellipse(cx, bottom + 2, 14, 3, 0, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawLegs(c: CharCtx, skin: string, shoe: string) {
-  const { ctx, cx, bottom, h, legPhase, grounded } = c;
-  const legH = h * 0.22;
-  const swing = grounded ? Math.sin(legPhase) * 4 : 2;
-  const top = bottom - legH;
-
-  ctx.fillStyle = skin;
-  // Left leg
-  ctx.fillRect(cx - 6, top + Math.max(0, swing), 4, legH - Math.max(0, swing) + 2);
-  // Right leg
-  ctx.fillRect(cx + 2, top + Math.max(0, -swing), 4, legH - Math.max(0, -swing) + 2);
-
-  // Shoes
-  ctx.fillStyle = shoe;
-  const shoeyL = top + legH + Math.max(0, swing);
-  const shoeyR = top + legH + Math.max(0, -swing);
-  ctx.beginPath();
-  ctx.ellipse(cx - 4, shoeyL, 4, 2.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(cx + 4, shoeyR, 4, 2.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawEyes(c: CharCtx, eyeX: number, eyeY: number) {
-  const { ctx, cx } = c;
-  // Whites
-  ctx.fillStyle = "#FFF";
-  ctx.beginPath();
-  ctx.ellipse(cx - eyeX, eyeY, 3.5, 4, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(cx + eyeX, eyeY, 3.5, 4, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Pupils
-  ctx.fillStyle = "#1e293b";
-  ctx.beginPath();
-  ctx.arc(cx - eyeX + 0.5, eyeY + 0.5, 2.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(cx + eyeX + 0.5, eyeY + 0.5, 2.2, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Highlights
-  ctx.fillStyle = "#FFF";
-  ctx.beginPath();
-  ctx.arc(cx - eyeX - 1, eyeY - 1.2, 1.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(cx + eyeX - 1, eyeY - 1.2, 1.2, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawBlush(c: CharCtx, bx: number, by: number) {
-  const { ctx, cx } = c;
-  ctx.fillStyle = "rgba(255, 150, 150, 0.35)";
-  ctx.beginPath();
-  ctx.ellipse(cx - bx, by, 4, 2.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(cx + bx, by, 4, 2.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function drawMouth(c: CharCtx, mx: number, my: number) {
-  const { ctx, cx } = c;
-  ctx.strokeStyle = "#D4736B";
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.arc(cx + mx, my, 2.5, 0.15, Math.PI - 0.15);
-  ctx.stroke();
-}
+// Shared palette
+const C = {
+  skin: "#FFE4C4",
+  skinShadow: "#E8C9A8",
+  hair: "#5C3A21",
+  hairLight: "#7A5030",
+  eyeWhite: "#FFFFFF",
+  pupil: "#1e293b",
+  blush: "#FFB5B5",
+  mouth: "#D4736B",
+  white: "#FFFFFF",
+  black: "#1E293B",
+  gray: "#94A3B8",
+  darkGray: "#475569",
+};
 
 // ─── Girl: vv ───
-// Round face, brown bob with pigtails, red dress
+// Brown bob with pigtails, red dress, cute expression
 
-export function drawGirl(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  legPhase: number,
-  grounded: boolean
-) {
-  const cx = x + w / 2;
-  const bottom = y;
-  const c: CharCtx = { ctx, cx, bottom, h, legPhase, grounded };
+const GIRL_BODY: Pixel[] = [
+  // ── Hair ──
+  [6, 0, 6, 2, C.hair],          // top
+  [4, 2, 10, 2, C.hair],         // top-mid
+  [1, 4, 4, 13, C.hair],         // left hanging
+  [13, 4, 4, 13, C.hair],        // right hanging
+  [3, 4, 12, 2, C.hair],         // bangs top
+  [3, 6, 2, 2, C.hair],          // left bang gap fill
+  [13, 6, 2, 2, C.hair],         // right bang gap fill
+  [5, 4, 8, 2, C.hairLight],     // hair shine
+  [3, 5, 2, 1, C.hairLight],     // shine left
+  [13, 5, 2, 1, C.hairLight],    // shine right
 
-  drawShadow(c);
+  // ── Pigtails ──
+  [0, 8, 2, 4, C.hair],          // left pigtail
+  [-1, 12, 2, 3, C.hair],        // left pigtail bottom
+  [16, 8, 2, 4, C.hair],         // right pigtail
+  [17, 12, 2, 3, C.hair],        // right pigtail bottom
+  [0, 8, 1, 1, "#8B4513"],       // left tie
+  [17, 8, 1, 1, "#8B4513"],      // right tie
 
-  const headR = h * 0.17;
-  const headCY = bottom - h + h * 0.33;
+  // ── Face ──
+  [4, 6, 10, 10, C.skin],        // main face
 
-  // Hair behind
-  ctx.fillStyle = "#5C3A21";
-  ctx.beginPath();
-  ctx.arc(cx, headCY + 1, headR + 4, Math.PI, 0);
-  ctx.fill();
-  ctx.fillRect(cx - headR - 4, headCY - 3, headR * 2 + 8, headR * 0.5);
+  // ── Eyes ──
+  [5, 8, 3, 3, C.eyeWhite],      // left eye white
+  [10, 8, 3, 3, C.eyeWhite],     // right eye white
+  [6, 9, 2, 2, C.pupil],         // left pupil
+  [11, 9, 2, 2, C.pupil],        // right pupil
+  [6, 8, 1, 1, C.eyeWhite],      // left highlight
+  [11, 8, 1, 1, C.eyeWhite],     // right highlight
 
-  // Pigtails
-  ctx.beginPath();
-  ctx.ellipse(cx - headR - 7, headCY + headR * 0.3, 4, 7, -0.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(cx + headR + 7, headCY + headR * 0.3, 4, 7, 0.2, 0, Math.PI * 2);
-  ctx.fill();
+  // ── Blush ──
+  [3, 11, 3, 2, C.blush],        // left blush
+  [12, 11, 3, 2, C.blush],       // right blush
 
-  // Head
-  ctx.fillStyle = "#FFE4C4";
-  ctx.beginPath();
-  ctx.arc(cx, headCY, headR, 0, Math.PI * 2);
-  ctx.fill();
+  // ── Mouth ──
+  [7, 13, 4, 1, C.mouth],        // smile
 
-  // Bangs
-  ctx.fillStyle = "#5C3A21";
-  ctx.beginPath();
-  ctx.arc(cx, headCY - 2, headR, Math.PI * 1.15, Math.PI * 1.85);
-  ctx.lineTo(cx - headR * 0.7, headCY - 4);
-  ctx.fill();
+  // ── Dress body ──
+  [4, 16, 10, 2, "#FF6B6B"],     // collar area
+  [3, 18, 12, 2, "#FF6B6B"],     // upper
+  [2, 20, 14, 2, "#FF6B6B"],     // mid
+  [2, 22, 14, 2, "#FF4757"],     // mid shadow
+  [3, 24, 12, 2, "#FF6B6B"],     // lower
+  [4, 26, 10, 2, "#FF4757"],     // lower shadow
+  [5, 28, 8, 1, "#FF6B6B"],      // skirt bottom
 
-  // Hair shine
-  ctx.fillStyle = "rgba(139, 94, 60, 0.3)";
-  ctx.beginPath();
-  ctx.ellipse(cx, headCY - headR * 0.5, headR * 0.5, headR * 0.15, 0, 0, Math.PI * 2);
-  ctx.fill();
+  // ── Collar ──
+  [5, 16, 4, 2, C.white],        // white collar left
+  [9, 16, 4, 2, C.white],        // white collar right
 
-  // Eyes
-  drawEyes(c, 5, headCY + 1.5);
+  // ── Arms (skin) ──
+  [1, 18, 2, 6, C.skin],         // left arm
+  [15, 18, 2, 6, C.skin],        // right arm
 
-  // Blush
-  drawBlush(c, 8.5, headCY + 5);
+  // ── Legs ──
+  [5, 29, 3, 4, C.skin],         // left leg
+  [10, 29, 3, 4, C.skin],        // right leg
 
-  // Mouth
-  drawMouth(c, 0, headCY + 5.5);
+  // ── Shoes ──
+  [4, 33, 5, 2, "#FF4757"],      // left shoe
+  [9, 33, 5, 2, "#FF4757"],      // right shoe
+];
 
-  // Body (dress)
-  const bodyTop = headCY + headR + 2;
-  const bodyBot = bottom - h * 0.22;
-
-  ctx.fillStyle = "#FF6B6B";
-  // Dress body
-  ctx.beginPath();
-  ctx.moveTo(cx - 10, bodyTop);
-  ctx.lineTo(cx + 10, bodyTop);
-  ctx.lineTo(cx + 12, bodyBot);
-  ctx.lineTo(cx - 12, bodyBot);
-  ctx.closePath();
-  ctx.fill();
-
-  // Dress highlight
-  ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
-  ctx.fillRect(cx - 7, bodyTop + 3, 5, bodyBot - bodyTop - 6);
-
-  // Collar
-  ctx.fillStyle = "#FFF";
-  ctx.beginPath();
-  ctx.arc(cx, bodyTop, 5, Math.PI, 0);
-  ctx.fill();
-
-  // Legs
-  drawLegs(c, "#FFE4C4", "#FF4757");
+// Animated legs for running
+function getGirlLegs(phase: number): Pixel[] {
+  const swing = Math.sin(phase) * 2;
+  return [
+    // Left leg
+    [5 + swing, 29, 3, 4, C.skin],
+    // Right leg
+    [10 - swing, 29, 3, 4, C.skin],
+    // Shoes
+    [4 + swing, 33, 5, 2, "#FF4757"],
+    [9 - swing, 33, 5, 2, "#FF4757"],
+  ];
 }
 
 // ─── Boy: cc ───
 // Spiky hair, blue jacket, dark pants
 
-export function drawBoy(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  legPhase: number,
-  grounded: boolean
-) {
-  const cx = x + w / 2;
-  const bottom = y;
-  const c: CharCtx = { ctx, cx, bottom, h, legPhase, grounded };
+const BOY_STATIC: Pixel[] = [
+  // ── Spiky hair ──
+  [3, 0, 3, 3, C.black],         // left spike
+  [7, 0, 4, 2, C.black],         // center spike top
+  [11, 0, 3, 3, C.black],        // right spike
+  [5, 2, 2, 3, C.black],         // left-mid spike
+  [11, 2, 2, 3, C.black],        // right-mid spike
+  [2, 3, 4, 2, C.black],         // left side
+  [12, 3, 4, 2, C.black],        // right side
+  [4, 3, 10, 4, C.black],        // hair main
+  [6, 2, 6, 1, C.darkGray],      // hair highlight
 
-  drawShadow(c);
+  // ── Face ──
+  [4, 7, 10, 9, C.skin],         // main face
 
-  const headR = h * 0.17;
-  const headCY = bottom - h + h * 0.33;
+  // ── Eyes ──
+  [5, 9, 3, 3, C.eyeWhite],      // left eye
+  [10, 9, 3, 3, C.eyeWhite],     // right eye
+  [6, 10, 2, 2, C.pupil],        // left pupil
+  [11, 10, 2, 2, C.pupil],       // right pupil
+  [6, 9, 1, 1, C.eyeWhite],      // highlight
+  [11, 9, 1, 1, C.eyeWhite],
 
-  // Spiky hair
-  ctx.fillStyle = "#374151";
-  // Hair spikes
-  const spikes = [
-    [cx - 9, headCY - headR - 2],
-    [cx - 5, headCY - headR - 6],
-    [cx, headCY - headR - 8],
-    [cx + 5, headCY - headR - 6],
-    [cx + 9, headCY - headR - 2],
+  // ── Eyebrows ──
+  [4, 7, 4, 1, C.black],         // left brow
+  [10, 7, 4, 1, C.black],        // right brow
+
+  // ── Blush ──
+  [3, 11, 3, 2, C.blush],
+  [12, 11, 3, 2, C.blush],
+
+  // ── Mouth ──
+  [7, 13, 4, 1, C.mouth],
+
+  // ── Jacket body ──
+  [4, 16, 10, 2, "#3B82F6"],     // collar area
+  [3, 18, 12, 3, "#3B82F6"],     // upper
+  [3, 21, 12, 3, "#2563EB"],     // mid shadow
+  [4, 24, 10, 3, "#3B82F6"],     // lower
+  [5, 27, 8, 2, "#2563EB"],      // bottom
+
+  // ── Zipper line ──
+  [8, 17, 2, 11, C.white],       // zipper
+
+  // ── White shirt collar ──
+  [4, 16, 3, 2, C.white],
+  [11, 16, 3, 2, C.white],
+
+  // ── Arms ──
+  [1, 18, 2, 7, C.skin],
+  [15, 18, 2, 7, C.skin],
+
+  // ── Pants ──
+  [5, 29, 8, 2, C.black],
+  [5, 31, 3, 3, C.black],        // left pant leg
+  [10, 31, 3, 3, C.black],       // right pant leg
+
+  // ── Belt ──
+  [5, 28, 8, 1, "#475569"],
+  [8, 28, 2, 2, "#FBBF24"],      // belt buckle
+];
+
+function getBoyLegs(phase: number): Pixel[] {
+  const swing = Math.sin(phase) * 2;
+  return [
+    // Pant legs
+    [5 + swing, 31, 3, 3, C.black],
+    [10 - swing, 31, 3, 3, C.black],
+    // Skin legs
+    [5 + swing, 34, 3, 1, C.skin],
+    [10 - swing, 34, 3, 1, C.skin],
+    // Shoes
+    [4 + swing, 35, 5, 2, "#1E293B"],
+    [9 - swing, 35, 5, 2, "#1E293B"],
   ];
-  for (const [sx, sy] of spikes) {
-    ctx.beginPath();
-    ctx.arc(sx, sy + 4, 5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  // Hair base
-  ctx.fillRect(cx - headR - 2, headCY - headR + 4, headR * 2 + 4, headR * 0.6);
-
-  // Head
-  ctx.fillStyle = "#FFE4C4";
-  ctx.beginPath();
-  ctx.arc(cx, headCY, headR, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Eyes
-  drawEyes(c, 5, headCY + 1.5);
-
-  // Eyebrows
-  ctx.strokeStyle = "#374151";
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(cx - 8, headCY - 3);
-  ctx.lineTo(cx - 3, headCY - 4);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(cx + 8, headCY - 3);
-  ctx.lineTo(cx + 3, headCY - 4);
-  ctx.stroke();
-
-  // Blush
-  drawBlush(c, 8.5, headCY + 5);
-
-  // Mouth
-  drawMouth(c, 0, headCY + 5.5);
-
-  // Body (jacket)
-  const bodyTop = headCY + headR + 2;
-  const bodyBot = bottom - h * 0.22;
-
-  // Jacket
-  ctx.fillStyle = "#3B82F6";
-  ctx.beginPath();
-  ctx.roundRect(cx - 10, bodyTop, 20, bodyBot - bodyTop, 3);
-  ctx.fill();
-
-  // Jacket zipper line
-  ctx.fillStyle = "#2563EB";
-  ctx.fillRect(cx - 1, bodyTop + 2, 2, bodyBot - bodyTop - 4);
-
-  // White shirt collar
-  ctx.fillStyle = "#FFF";
-  ctx.fillRect(cx - 4, bodyTop, 3, 4);
-  ctx.fillRect(cx + 1, bodyTop, 3, 4);
-
-  // Pants
-  ctx.fillStyle = "#1E293B";
-  ctx.fillRect(cx - 9, bodyBot - 4, 18, 4);
-
-  // Belt
-  ctx.fillStyle = "#475569";
-  ctx.fillRect(cx - 9, bodyBot - 6, 18, 2);
-  ctx.fillRect(cx - 2, bodyBot - 6, 4, 6);
-
-  // Legs
-  drawLegs(c, "#FFE4C4", "#2E7D32");
 }
 
 // ─── Fox: Rusty ───
+// Orange fox with pointy ears, white belly, bushy tail
+
+const FOX_STATIC: Pixel[] = [
+  // ── Ears ──
+  [2, 0, 4, 4, "#FB923C"],       // left ear
+  [12, 0, 4, 4, "#FB923C"],      // right ear
+  [3, 1, 2, 3, C.skin],          // left inner ear
+  [13, 1, 2, 3, C.skin],         // right inner ear
+
+  // ── Head ──
+  [3, 4, 12, 10, "#FB923C"],     // main head
+  [4, 5, 10, 2, "#F97316"],      // head highlight
+
+  // ── White muzzle ──
+  [5, 9, 8, 5, C.white],         // snout area
+  [6, 10, 6, 3, "#FFE4C4"],      // lighter center
+
+  // ── Eyes (fox - angled slits) ──
+  [4, 6, 3, 2, C.pupil],         // left eye
+  [11, 6, 3, 2, C.pupil],        // right eye
+  [4, 6, 1, 1, C.white],         // left glint
+  [13, 6, 1, 1, C.white],        // right glint
+
+  // ── Nose ──
+  [7, 11, 4, 2, C.black],
+
+  // ── Mouth ──
+  [7, 13, 4, 1, C.mouth],
+
+  // ── Body ──
+  [3, 14, 12, 10, "#FB923C"],    // main body
+  [4, 15, 10, 2, "#F97316"],     // body highlight
+  [3, 22, 12, 2, "#F97316"],     // body shadow
+
+  // ── White belly ──
+  [5, 16, 8, 7, C.white],        // belly
+
+  // ── Tail ──
+  [13, 20, 6, 5, "#FB923C"],     // tail
+  [14, 21, 5, 3, "#F97316"],     // tail highlight
+  [16, 19, 4, 2, C.white],       // tail tip white
+
+  // ── Paws (short, four-legged) ──
+  [3, 24, 3, 3, "#FB923C"],      // front left
+  [5, 24, 3, 3, "#FB923C"],      // front right
+  [10, 24, 3, 3, "#FB923C"],     // back left
+  [12, 24, 3, 3, "#FB923C"],     // back right
+
+  // ── Paw tips (white) ──
+  [3, 26, 3, 1, C.white],
+  [5, 26, 3, 1, C.white],
+  [10, 26, 3, 1, C.white],
+  [12, 26, 3, 1, C.white],
+];
+
+function getFoxLegs(phase: number): Pixel[] {
+  const swing = Math.sin(phase) * 1.5;
+  return [
+    [3, 24, 3, 3, "#FB923C"],
+    [5 + Math.floor(swing), 24, 3, 3, "#FB923C"],
+    [10 - Math.floor(swing), 24, 3, 3, "#FB923C"],
+    [12, 24, 3, 3, "#FB923C"],
+    // Paw tips
+    [3, 26, 3, 1, C.white],
+    [5 + Math.floor(swing), 26, 3, 1, C.white],
+    [10 - Math.floor(swing), 26, 3, 1, C.white],
+    [12, 26, 3, 1, C.white],
+  ];
+}
+
+// Sprite heights (how many pixel rows each character occupies)
+// Used to position feet at ground level
+const GIRL_H = 35;
+const BOY_H = 37;
+const FOX_H = 28;
+
+// ─── Drawing wrapper ───
+// Each draw function receives raw canvas + player state from the game engine
+
+export function drawGirl(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number,
+  legPhase: number, grounded: boolean
+) {
+  // Center the 18-wide sprite horizontally, align feet just above ground
+  const ox = x + (w - 18) / 2;
+  const oy = y - GIRL_H - 1;
+  px(ctx, GIRL_BODY, ox, oy);
+  if (grounded) {
+    px(ctx, getGirlLegs(legPhase), ox, oy);
+  } else {
+    px(ctx, getGirlLegs(0.5), ox, oy);
+  }
+}
+
+export function drawBoy(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number, w: number, h: number,
+  legPhase: number, grounded: boolean
+) {
+  const ox = x + (w - 18) / 2;
+  const oy = y - BOY_H - 1;
+  px(ctx, BOY_STATIC, ox, oy);
+  if (grounded) {
+    px(ctx, getBoyLegs(legPhase), ox, oy);
+  } else {
+    px(ctx, getBoyLegs(0.3), ox, oy);
+  }
+}
 
 export function drawFox(
   ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  legPhase: number,
-  grounded: boolean
+  x: number, y: number, w: number, h: number,
+  legPhase: number, grounded: boolean
 ) {
-  const cx = x + w / 2;
-  const bottom = y;
-  const c: CharCtx = { ctx, cx, bottom, h, legPhase, grounded };
-
-  drawShadow(c);
-
-  const headR = h * 0.14;
-  const headCY = bottom - h + h * 0.35;
-
-  // Ears
-  ctx.fillStyle = "#FB923C";
-  // Left ear
-  ctx.beginPath();
-  ctx.moveTo(cx - headR - 2, headCY - headR + 4);
-  ctx.lineTo(cx - headR + 4, headCY - headR - 4);
-  ctx.lineTo(cx - headR + 8, headCY - headR + 4);
-  ctx.closePath();
-  ctx.fill();
-  // Right ear
-  ctx.beginPath();
-  ctx.moveTo(cx + headR - 8, headCY - headR + 4);
-  ctx.lineTo(cx + headR - 4, headCY - headR - 4);
-  ctx.lineTo(cx + headR + 2, headCY - headR + 4);
-  ctx.closePath();
-  ctx.fill();
-
-  // Inner ears
-  ctx.fillStyle = "#FFE4C4";
-  ctx.beginPath();
-  ctx.moveTo(cx - headR, headCY - headR + 4);
-  ctx.lineTo(cx - headR + 4, headCY - headR - 2);
-  ctx.lineTo(cx - headR + 6, headCY - headR + 4);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(cx + headR - 6, headCY - headR + 4);
-  ctx.lineTo(cx + headR - 4, headCY - headR - 2);
-  ctx.lineTo(cx + headR, headCY - headR + 4);
-  ctx.closePath();
-  ctx.fill();
-
-  // Head
-  ctx.fillStyle = "#FB923C";
-  ctx.beginPath();
-  ctx.arc(cx, headCY, headR, 0, Math.PI * 2);
-  ctx.fill();
-
-  // White cheeks/snout
-  ctx.fillStyle = "#FFF";
-  ctx.beginPath();
-  ctx.ellipse(cx, headCY + headR * 0.3, headR * 0.6, headR * 0.4, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Eyes (fox - slightly angled)
-  ctx.fillStyle = "#1e293b";
-  ctx.beginPath();
-  ctx.ellipse(cx - 5, headCY + 1, 2.5, 3, -0.1, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(cx + 5, headCY + 1, 2.5, 3, 0.1, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Eye highlights
-  ctx.fillStyle = "#FFF";
-  ctx.beginPath();
-  ctx.arc(cx - 5.5, headCY - 0.5, 1, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(cx + 4.5, headCY - 0.5, 1, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Nose
-  ctx.fillStyle = "#1e293b";
-  ctx.beginPath();
-  ctx.ellipse(cx, headCY + 4, 2, 1.5, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Body
-  const bodyTop = headCY + headR;
-  const bodyBot = bottom - h * 0.2;
-
-  ctx.fillStyle = "#FB923C";
-  ctx.beginPath();
-  ctx.ellipse(cx + 2, (bodyTop + bodyBot) / 2, 12, (bodyBot - bodyTop) / 2, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // White belly
-  ctx.fillStyle = "#FFF";
-  ctx.beginPath();
-  ctx.ellipse(cx + 2, (bodyTop + bodyBot) / 2 + 2, 7, (bodyBot - bodyTop) / 2 - 2, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Tail
-  ctx.fillStyle = "#FB923C";
-  ctx.beginPath();
-  ctx.ellipse(cx + 16, bodyBot - 4, 10, 5, 0.3, 0, Math.PI * 2);
-  ctx.fill();
-  // Tail tip
-  ctx.fillStyle = "#FFF";
-  ctx.beginPath();
-  ctx.ellipse(cx + 18, bodyBot - 5, 4, 3, 0.3, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Legs (shorter for fox - four legged stance implied)
-  const legH = h * 0.15;
-  const swing = grounded ? Math.sin(legPhase) * 2.5 : 1;
-  ctx.fillStyle = "#FB923C";
-  ctx.fillRect(cx - 7, bodyBot + Math.max(0, swing), 4, legH - Math.max(0, swing) + 1);
-  ctx.fillRect(cx + 3, bodyBot + Math.max(0, -swing), 4, legH - Math.max(0, -swing) + 1);
-  // Paws
-  ctx.fillStyle = "#FFF";
-  ctx.fillRect(cx - 7, bodyBot + legH + Math.max(0, swing), 4, 2);
-  ctx.fillRect(cx + 3, bodyBot + legH + Math.max(0, -swing), 4, 2);
+  const ox = x + (w - 18) / 2;
+  const oy = y - FOX_H - 1;
+  px(ctx, FOX_STATIC, ox, oy);
+  if (grounded) {
+    px(ctx, getFoxLegs(legPhase), ox, oy);
+  } else {
+    px(ctx, getFoxLegs(0.25), ox, oy);
+  }
 }
 
 // ─── Character registry ───
@@ -420,12 +324,8 @@ export interface CharDef {
   label: string;
   draw: (
     ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    legPhase: number,
-    grounded: boolean
+    x: number, y: number, w: number, h: number,
+    legPhase: number, grounded: boolean
   ) => void;
   icon: React.ReactNode;
 }
@@ -437,13 +337,13 @@ export const CHARACTERS: CharDef[] = [
     draw: drawGirl,
     icon: (
       <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="5" r="3" fill="#FFE4C4" />
-        <circle cx="8" cy="3" r="3.5" fill="#5C3A21" />
-        <ellipse cx="4" cy="6" rx="1.5" ry="3" fill="#5C3A21" />
-        <ellipse cx="12" cy="6" rx="1.5" ry="3" fill="#5C3A21" />
-        <circle cx="7" cy="5" r="1" fill="#1e293b" />
-        <circle cx="9" cy="5" r="1" fill="#1e293b" />
-        <path d="M5 10 L8 14 L11 10 Z" fill="#FF6B6B" />
+        <rect x="4" y="2" width="8" height="2" fill="#5C3A21" />
+        <rect x="6" y="4" width="4" height="4" fill="#FFE4C4" />
+        <rect x="5" y="6" width="1" height="1" fill="#1e293b" />
+        <rect x="10" y="6" width="1" height="1" fill="#1e293b" />
+        <rect x="4" y="8" width="8" height="4" fill="#FF6B6B" />
+        <rect x="6" y="12" width="1" height="2" fill="#FFE4C4" />
+        <rect x="9" y="12" width="1" height="2" fill="#FFE4C4" />
       </svg>
     ),
   },
@@ -453,12 +353,14 @@ export const CHARACTERS: CharDef[] = [
     draw: drawBoy,
     icon: (
       <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
-        <circle cx="8" cy="5" r="3" fill="#FFE4C4" />
-        <path d="M4 4 L6 1 L8 0 L10 1 L12 4" fill="#374151" />
-        <circle cx="7" cy="5" r="1" fill="#1e293b" />
-        <circle cx="9" cy="5" r="1" fill="#1e293b" />
-        <path d="M5 9 L8 14 L11 9 Z" fill="#3B82F6" />
-        <rect x="6" y="13" width="4" height="2" fill="#1E293B" />
+        <rect x="5" y="1" width="6" height="1" fill="#1E293B" />
+        <rect x="3" y="2" width="10" height="1" fill="#1E293B" />
+        <rect x="6" y="3" width="4" height="4" fill="#FFE4C4" />
+        <rect x="5" y="5" width="1" height="1" fill="#1e293b" />
+        <rect x="10" y="5" width="1" height="1" fill="#1e293b" />
+        <rect x="4" y="7" width="8" height="4" fill="#3B82F6" />
+        <rect x="6" y="11" width="1" height="3" fill="#1E293B" />
+        <rect x="9" y="11" width="1" height="3" fill="#1E293B" />
       </svg>
     ),
   },
@@ -468,15 +370,15 @@ export const CHARACTERS: CharDef[] = [
     draw: drawFox,
     icon: (
       <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
-        <path d="M4 4 L5 2 L7 4" fill="#FB923C" />
-        <path d="M12 4 L11 2 L9 4" fill="#FB923C" />
-        <circle cx="8" cy="6" r="3" fill="#FB923C" />
-        <ellipse cx="8" cy="7.5" rx="2.5" ry="1.5" fill="#FFF" />
-        <circle cx="7" cy="6" r="0.8" fill="#1e293b" />
-        <circle cx="9" cy="6" r="0.8" fill="#1e293b" />
-        <ellipse cx="8" cy="11" rx="4" ry="3" fill="#FB923C" />
-        <ellipse cx="13" cy="11" rx="3" ry="1.5" fill="#FB923C" />
-        <circle cx="14" cy="11" r="1" fill="#FFF" />
+        <rect x="4" y="3" width="8" height="4" fill="#FB923C" />
+        <rect x="3" y="0" width="2" height="4" fill="#FB923C" />
+        <rect x="11" y="0" width="2" height="4" fill="#FB923C" />
+        <rect x="5" y="6" width="6" height="4" fill="#FB923C" />
+        <rect x="4" y="7" width="8" height="2" fill="#FB923C" />
+        <rect x="6" y="5" width="1" height="1" fill="#1e293b" />
+        <rect x="9" y="5" width="1" height="1" fill="#1e293b" />
+        <rect x="3" y="9" width="10" height="4" fill="#FB923C" />
+        <rect x="12" y="10" width="2" height="2" fill="#FB923C" />
       </svg>
     ),
   },
