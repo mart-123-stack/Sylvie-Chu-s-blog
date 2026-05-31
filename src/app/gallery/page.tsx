@@ -1,4 +1,5 @@
 import { getPhotos } from "@/lib/config";
+import AnimatedSection from "@/components/AnimatedSection";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -13,9 +14,9 @@ export default async function GalleryPage() {
         <h2 className="text-4xl font-bold text-sky-900 dark:text-white mb-8">Photo Gallery</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {photos.map((photo) => (
+          {photos.map((photo, i) => (
+            <AnimatedSection key={photo.id} animation="fade-in-up" delay={i * 80}>
             <div
-              key={photo.id}
               className="bg-white dark:bg-slate-800 rounded-lg shadow-lg shadow-sky-100 dark:shadow-slate-900/30 overflow-hidden hover:shadow-xl hover:shadow-sky-200 dark:hover:shadow-slate-800/30 transition transform hover:-translate-y-1"
             >
               <div className="aspect-video bg-gradient-to-br from-sky-100 to-sky-200 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center p-2">
@@ -32,6 +33,7 @@ export default async function GalleryPage() {
                 <p className="text-sm text-foreground/60 dark:text-sky-300">{photo.category}</p>
               </div>
             </div>
+            </AnimatedSection>
           ))}
         </div>
       </main>

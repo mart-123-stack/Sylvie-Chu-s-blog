@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/lib/theme-context";
 import SiteHeader from "@/components/SiteHeader";
 import VisitTracker from "@/components/VisitTracker";
 import BlogPet from "@/components/BlogPet";
+import StarField from "@/components/StarField";
 
 export const metadata: Metadata = {
   title: {
@@ -33,6 +34,7 @@ export default function RootLayout({
             <SiteHeader />
             {children}
             <VisitTracker />
+            <StarField />
             <BlogPet />
           </AuthProvider>
         </ThemeProvider>

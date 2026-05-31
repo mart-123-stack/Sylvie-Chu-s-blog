@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getPosts, getAllTags } from "@/lib/posts";
 import BlogSearchBar from "@/components/BlogSearchBar";
 import BlogPagination from "@/components/BlogPagination";
+import AnimatedSection from "@/components/AnimatedSection";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -79,33 +80,35 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
               </p>
             </div>
           ) : (
-            posts.map((post) => (
-              <div key={post.id} className="bg-white/90 rounded-xl shadow-lg shadow-sky-100 p-6 hover:shadow-xl hover:shadow-sky-200 transition border border-sky-100 dark:bg-slate-800/90 dark:border-slate-700 dark:shadow-slate-900/30 dark:hover:shadow-slate-800/30">
-                <h3 className="text-2xl font-semibold text-sky-900 mb-2 dark:text-white">{post.title}</h3>
-                <p className="text-foreground/60 mb-4">{post.excerpt}</p>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm text-foreground/40">
-                      {new Date(post.date).toLocaleDateString()}
-                    </span>
-                    {post.tags && post.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {post.tags.map(t => (
-                          <span
-                            key={t}
-                            className="text-xs px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full dark:bg-sky-900 dark:text-sky-300"
-                          >
-                            {t}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+            posts.map((post, i) => (
+              <AnimatedSection key={post.id} animation="fade-in-up" delay={i * 80}>
+                <div className="bg-white/90 rounded-xl shadow-lg shadow-sky-100 p-6 hover:shadow-xl hover:shadow-sky-200 transition border border-sky-100 dark:bg-slate-800/90 dark:border-slate-700 dark:shadow-slate-900/30 dark:hover:shadow-slate-800/30">
+                  <h3 className="text-2xl font-semibold text-sky-900 mb-2 dark:text-white">{post.title}</h3>
+                  <p className="text-foreground/60 mb-4">{post.excerpt}</p>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm text-foreground/40">
+                        {new Date(post.date).toLocaleDateString()}
+                      </span>
+                      {post.tags && post.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {post.tags.map(t => (
+                            <span
+                              key={t}
+                              className="text-xs px-2 py-0.5 bg-sky-100 text-sky-700 rounded-full dark:bg-sky-900 dark:text-sky-300"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <Link href={`/blog/${post.slug}`} className="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 hover:underline">
+                      Read more →
+                    </Link>
                   </div>
-                  <Link href={`/blog/${post.slug}`} className="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 hover:underline">
-                    Read more →
-                  </Link>
                 </div>
-              </div>
+              </AnimatedSection>
             ))
           )}
         </div>
