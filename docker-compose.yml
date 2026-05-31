@@ -33,6 +33,7 @@ services:
     restart: unless-stopped
     volumes:
       - uploads_data:/app/public/uploads
+    mem_limit: 512m
 
   mcp-server:
     build:
@@ -47,6 +48,7 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    mem_limit: 256m
 
 volumes:
   postgres_data:
