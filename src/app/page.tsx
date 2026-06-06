@@ -79,6 +79,20 @@ export default function Home() {
             </div>
           </Link>
 
+          {/* Canvas FOMO — bottom right */}
+          <Link href="/canvas-fomo" className="glass-card glass-card-hover rounded-xl p-6 flex flex-col justify-between">
+            <div>
+              <div className="text-primary-light mb-3 dark:text-sky-400">
+                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <rect x="3" y="3" width="18" height="18" rx="2" strokeWidth={2} />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h2v2H7zM11 7h2v2h-2zM15 7h2v2h-2zM7 11h2v2H7zM11 11h2v2h-2zM15 11h2v2h-2zM7 15h2v2H7zM11 15h2v2h-2zM15 15h2v2h-2z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold leading-snug text-primary-dark dark:text-white">Canvas FOMO</h3>
+              <p className="text-foreground/60 text-sm mt-1">Paint & conquer the on-chain canvas</p>
+            </div>
+          </Link>
+
           {/* Gallery — bottom right */}
           <Link href="/gallery" className="glass-card glass-card-hover rounded-xl p-6 flex flex-col justify-between">
             <div>

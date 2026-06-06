@@ -41,6 +41,7 @@ export default function SiteHeader() {
             <Link href="/about" className="nav-link text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition-colors">About</Link>
             <Link href="/gallery" className="nav-link text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition-colors">Gallery</Link>
             <Link href="/visitors" className="nav-link text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition-colors">Visitors</Link>
+            <Link href="/canvas-fomo" className="nav-link text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition-colors">Canvas FOMO</Link>
             {authLoaded && (token || user) ? (
               <>
                 {isAdmin ? (
