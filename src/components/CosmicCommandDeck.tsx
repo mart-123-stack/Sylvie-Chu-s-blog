@@ -15,19 +15,14 @@ interface PodcastEpisode {
   logLine: string;
 }
 
-interface MixerLevels {
-  whiteNoise: number;
-  engineThrust: number;
-  podcastVolume: number;
-}
-
-interface TelemetryData {
+interface SiteStats {
   bestScore: number;
   totalVisits: number;
   todayVisits: number;
+  totalComments: number;
 }
 
-// ─── Mock Podcast Data ───
+// ─── Constants ───
 
 const PODCASTS: PodcastEpisode[] = [
   {
@@ -64,64 +59,41 @@ const PODCASTS: PodcastEpisode[] = [
   },
 ];
 
-// ─── Constants ───
-
-const CANVAS_W = 340;
-const CANVAS_H = 130;
+const CANVAS_W = 300;
+const CANVAS_H = 100;
 const BAR_COUNT = 48;
 
-// ─── Corner Bracket ───
+// ─── Section Divider ───
 
-function CornerBrackets() {
+function SectionDivider() {
   return (
-    <>
-      {/* Top-left */}
-      <div className="absolute -top-px -left-px w-4 h-4 pointer-events-none">
-        <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-sky-500/40 rounded-tl" />
-      </div>
-      {/* Top-right */}
-      <div className="absolute -top-px -right-px w-4 h-4 pointer-events-none">
-        <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-sky-500/40 rounded-tr" />
-      </div>
-      {/* Bottom-left */}
-      <div className="absolute -bottom-px -left-px w-4 h-4 pointer-events-none">
-        <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-sky-500/40 rounded-bl" />
-      </div>
-      {/* Bottom-right */}
-      <div className="absolute -bottom-px -right-px w-4 h-4 pointer-events-none">
-        <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-sky-500/40 rounded-br" />
-      </div>
-    </>
+    <div className="h-px bg-gradient-to-r from-slate-800/80 via-slate-800/40 to-transparent" />
   );
 }
 
 // ─── Zone Label ───
 
-function ZoneLabel({ label, accent = false }: { label: string; accent?: boolean }) {
+function ZoneLabel({ label }: { label: string }) {
   return (
-    <div className="flex items-center gap-2 mb-2.5">
-      <span className={`text-[10px] font-semibold tracking-[0.2em] uppercase ${accent ? 'text-cyan-400' : 'text-slate-500'}`}>
-        {label}
+    <div className="flex items-center gap-3 mb-3">
+      <span className="text-[9px] font-semibold tracking-[0.25em] uppercase text-slate-600">
+        // {label}
       </span>
-      <div className="flex-1 h-px bg-gradient-to-r from-slate-700/80 to-transparent" />
+      <div className="flex-1 h-px bg-gradient-to-r from-slate-800/60 to-transparent" />
     </div>
   );
 }
 
-// ─── Zone A: Signal Monitor (Canvas Visualizer) ───
+// ─── Zone A: Spectrum Monitor ───
 
-function SignalMonitor({
+function SpectrumMonitor({
   isPlaying,
-  mixerLevels,
-  onInteraction,
+  volume,
 }: {
   isPlaying: boolean;
-  mixerLevels: MixerLevels;
-  onInteraction: () => void;
+  volume: number;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animRef = useRef(0);
-  const dataRef = useRef<number[]>(Array(BAR_COUNT).fill(2));
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -134,121 +106,98 @@ function SignalMonitor({
     canvas.height = CANVAS_H * dpr;
     ctx.scale(dpr, dpr);
 
+    const bars = new Float32Array(BAR_COUNT).fill(1.5);
     let frame = 0;
+    let animId: number;
 
     const draw = () => {
       frame++;
       ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
 
-      const bars = dataRef.current;
-
+      // ── Update bars ──
       if (isPlaying) {
-        // Active equalizer — dynamic bars with energy from mixer levels
-        const energy = 0.5 + mixerLevels.podcastVolume * 0.5;
+        const energy = 0.4 + volume * 0.6;
         for (let i = 0; i < BAR_COUNT; i++) {
-          const target = 2 + Math.random() * 28 * energy * (0.3 + 0.7 * (1 - i / BAR_COUNT));
-          bars[i] += (target - bars[i]) * 0.25;
+          const target = 1.5 + Math.random() * 22 * energy * (0.3 + 0.7 * (1 - i / BAR_COUNT));
+          bars[i] += (target - bars[i]) * 0.2;
         }
       } else {
-        // CMB scanning mode — gentle sine waves
         for (let i = 0; i < BAR_COUNT; i++) {
-          const t = frame * 0.008;
-          const wave = Math.sin(i * 0.18 + t) * 3 + Math.sin(i * 0.07 + t * 0.6) * 4;
-          const target = Math.max(1, 6 + wave + Math.sin(i * 0.03 + t * 0.3) * 2);
-          bars[i] += (target - bars[i]) * 0.05;
+          const t = frame * 0.006;
+          const wave = Math.sin(i * 0.15 + t) * 2 + Math.sin(i * 0.05 + t * 0.5) * 3;
+          const target = bars[i] + (Math.max(1, 4 + wave) - bars[i]) * 0.03;
+          bars[i] = target;
         }
       }
 
-      // ── Draw grid lines ──
-      ctx.strokeStyle = 'rgba(56,189,248,0.05)';
-      ctx.lineWidth = 0.5;
-      for (let y = 0; y < CANVAS_H; y += CANVAS_H / 4) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(CANVAS_W, y);
-        ctx.stroke();
-      }
-
-      // ── Draw bars ──
+      // ── Draw ──
       const barW = CANVAS_W / BAR_COUNT;
-      const gap = 1;
+      const gap = 0.8;
       const midY = CANVAS_H / 2;
 
       for (let i = 0; i < BAR_COUNT; i++) {
         const h = bars[i];
         const x = i * barW + gap / 2;
         const w = barW - gap;
-        const alpha = 0.4 + (h / 30) * 0.6;
+        const a = Math.min(1, 0.25 + h / 28);
 
-        // Top bar
-        const grad = ctx.createLinearGradient(x, midY - h, x, midY);
-        grad.addColorStop(0, `rgba(56,189,248,${alpha * 0.9})`);
-        grad.addColorStop(0.5, `rgba(14,165,233,${alpha * 0.5})`);
-        grad.addColorStop(1, `rgba(14,165,233,${alpha * 0.1})`);
+        // Top half
+        const g1 = ctx.createLinearGradient(x, midY - h, x, midY);
+        g1.addColorStop(0, `rgba(103,232,249,${a * 0.5})`);
+        g1.addColorStop(0.6, `rgba(34,211,238,${a * 0.25})`);
+        g1.addColorStop(1, `rgba(34,211,238,${a * 0.06})`);
+        ctx.fillStyle = g1;
+        ctx.fillRect(x, midY - h, w, h);
 
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.roundRect(x, midY - h, w, h, [0, 0, 1, 1]);
-        ctx.fill();
-
-        // Bottom bar (mirror)
-        const gradB = ctx.createLinearGradient(x, midY, x, midY + h);
-        gradB.addColorStop(0, `rgba(14,165,233,${alpha * 0.1})`);
-        gradB.addColorStop(0.5, `rgba(14,165,233,${alpha * 0.5})`);
-        gradB.addColorStop(1, `rgba(56,189,248,${alpha * 0.9})`);
-
-        ctx.fillStyle = gradB;
-        ctx.beginPath();
-        ctx.roundRect(x, midY, w, h, [1, 1, 0, 0]);
-        ctx.fill();
-
-        // Glow center line
-        if (h > 8) {
-          ctx.fillStyle = `rgba(186,230,253,${alpha * 0.15})`;
-          ctx.beginPath();
-          ctx.roundRect(x, midY - 0.5, w, 1, [0.5]);
-          ctx.fill();
-        }
+        // Bottom half (mirror)
+        const g2 = ctx.createLinearGradient(x, midY, x, midY + h);
+        g2.addColorStop(0, `rgba(34,211,238,${a * 0.06})`);
+        g2.addColorStop(0.4, `rgba(34,211,238,${a * 0.25})`);
+        g2.addColorStop(1, `rgba(103,232,249,${a * 0.5})`);
+        ctx.fillStyle = g2;
+        ctx.fillRect(x, midY, w, h);
       }
 
-      // ── Overlay gradient fade ──
-      const fadeGrad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-      fadeGrad.addColorStop(0, 'rgba(2,6,23,0)');
-      fadeGrad.addColorStop(0.08, 'rgba(2,6,23,0)');
-      fadeGrad.addColorStop(0.45, 'rgba(2,6,23,0)');
-      fadeGrad.addColorStop(0.55, 'rgba(2,6,23,0)');
-      fadeGrad.addColorStop(0.92, 'rgba(2,6,23,0)');
-      fadeGrad.addColorStop(1, 'rgba(2,6,23,0.15)');
-      ctx.fillStyle = fadeGrad;
+      // ── Center accent line ──
+      ctx.fillStyle = 'rgba(103,232,249,0.08)';
+      ctx.fillRect(0, midY - 0.5, CANVAS_W, 1);
+
+      // ── Vignette ──
+      const vg = ctx.createRadialGradient(CANVAS_W * 0.5, CANVAS_H * 0.5, 10, CANVAS_W * 0.5, CANVAS_H * 0.5, CANVAS_W * 0.5);
+      vg.addColorStop(0, 'rgba(2,6,23,0)');
+      vg.addColorStop(1, 'rgba(2,6,23,0.25)');
+      ctx.fillStyle = vg;
       ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
-      animRef.current = requestAnimationFrame(draw);
+      animId = requestAnimationFrame(draw);
     };
 
-    animRef.current = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(animRef.current);
-  }, [isPlaying, mixerLevels.podcastVolume]);
+    animId = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(animId);
+  }, [isPlaying, volume]);
 
   return (
-    <div className="relative cursor-pointer" onClick={onInteraction}>
+    <div className="relative select-none">
       <canvas
         ref={canvasRef}
         style={{ width: CANVAS_W, height: CANVAS_H }}
-        className="w-full rounded-lg"
+        className="w-full rounded-md"
       />
-
-      {/* Status overlay — bottom-left */}
-      <div className="absolute bottom-2 left-2 flex items-center gap-2">
-        <span className={`inline-block w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.6)]' : 'bg-slate-600'}`} />
-        <span className="text-[10px] font-mono text-slate-400">
-          {isPlaying ? 'SIGNAL: LOCKED' : 'SCANNING COSMOS'}
+      <div className="absolute bottom-1.5 left-2 flex items-center gap-2">
+        <span
+          className={`inline-block w-1 h-1 rounded-full transition-colors duration-500 ${
+            isPlaying
+              ? 'bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.4)]'
+              : 'bg-slate-700'
+          }`}
+        />
+        <span className="text-[8px] font-mono text-slate-700 tracking-wider">
+          {isPlaying ? 'RX::LOCKED' : 'RX::STANDBY'}
         </span>
       </div>
-
-      {/* Frequency readout — bottom-right */}
-      <div className="absolute bottom-2 right-2">
-        <span className="text-[10px] font-mono text-slate-500">
-          FREQ: {isPlaying ? (98.4 + Math.random() * 0.2).toFixed(1) : '---.--'} MHz
+      <div className="absolute bottom-1.5 right-2">
+        <span className="text-[8px] font-mono text-slate-700 tracking-wider tabular-nums">
+          {isPlaying ? `${(98.4 + Math.random() * 0.2).toFixed(1)} MHz` : '--.— MHz'}
         </span>
       </div>
     </div>
@@ -270,62 +219,71 @@ function PodcastCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 + index * 0.06, duration: 0.35, ease: 'easeOut' }}
-      className="group relative flex gap-3 p-2.5 rounded-xl border border-slate-800/60 bg-slate-900/40
-        hover:bg-slate-900/70 hover:border-sky-500/25 transition-all duration-300 cursor-default"
+      transition={{ delay: 0.08 + index * 0.04, duration: 0.3, ease: 'easeOut' }}
+      className="group relative flex items-start gap-3 px-3 py-2.5 rounded-lg
+        transition-all duration-500 cursor-default"
     >
-      <CornerBrackets />
-
-      {/* Cover art */}
+      {/* Hover ambient glow */}
       <div
-        className={`relative w-14 h-14 shrink-0 rounded-lg bg-gradient-to-br ${episode.coverGradient}
-          flex items-center justify-center text-2xl overflow-hidden ring-1 ring-white/5`}
+        className="absolute -inset-1 rounded-xl opacity-0 group-hover:opacity-100
+          bg-gradient-to-r from-cyan-500/[0.04] to-sky-500/[0.04]
+          blur-2xl transition-all duration-700 pointer-events-none"
+      />
+
+      {/* Cover */}
+      <div
+        className={`relative w-10 h-10 shrink-0 rounded-md bg-gradient-to-br ${episode.coverGradient}
+          flex items-center justify-center text-base overflow-hidden ring-1 ring-white/[0.04]`}
       >
         <span className="relative z-10">{episode.coverEmoji}</span>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
       </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5">
-          <span className="text-[10px] font-semibold tracking-wider text-sky-400/70 uppercase">
+          <span className="text-[8px] font-semibold tracking-widest text-slate-600 uppercase">
             {episode.podcastName}
           </span>
-          <svg className="w-2.5 h-2.5 text-sky-500/40" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-          </svg>
         </div>
-        <h4 className="text-xs font-semibold text-slate-200 truncate leading-tight mb-1">
+        <h4 className="font-serif font-medium leading-snug text-[13px] text-slate-300
+          group-hover:text-slate-200 transition-colors duration-500 line-clamp-1">
           {episode.episodeTitle}
         </h4>
-        <p className="text-[10px] text-slate-500 leading-relaxed line-clamp-2 italic">
+        <p className="text-[10px] text-slate-600 leading-relaxed line-clamp-1 mt-0.5">
           {episode.logLine}
         </p>
       </div>
 
       {/* Entry button */}
-      <div className="flex items-center">
+      <div className="flex items-center shrink-0 mt-0.5">
         <button
           onClick={(e) => { e.stopPropagation(); onEntry(episode); }}
           onMouseDown={() => setPressed(true)}
           onMouseUp={() => setPressed(false)}
           onMouseLeave={() => setPressed(false)}
           className={`
-            relative px-3 py-2 rounded-lg text-[10px] font-bold tracking-widest uppercase
-            transition-all duration-100 select-none
-            ${pressed
-              ? 'bg-sky-900/60 text-sky-300 shadow-inner shadow-black/40 translate-y-[1px] border-sky-500/40'
-              : 'bg-sky-950/60 text-sky-400/80 hover:text-sky-300 shadow-lg shadow-black/20 border border-sky-500/20 hover:border-sky-400/40 hover:bg-sky-900/50'
+            relative px-2.5 py-1.5 rounded-md text-[8px] font-semibold tracking-widest uppercase
+            transition-all duration-300 select-none
+            ${
+              pressed
+                ? 'bg-cyan-950/40 text-cyan-400/60 scale-[0.97]'
+                : 'text-slate-500 hover:text-cyan-400/80 border border-transparent hover:border-cyan-500/20'
             }
           `}
         >
-          <span className="relative z-10 flex items-center gap-1.5">
-            <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          {/* Hover glow behind button */}
+          <div
+            className="absolute inset-0 rounded-md opacity-0 group-hover:opacity-100
+              bg-gradient-to-r from-cyan-500/[0.04] to-sky-500/[0.04]
+              blur-md transition-all duration-500"
+          />
+          <span className="relative z-10 flex items-center gap-1">
+            <svg className="w-2 h-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
-            ENTRY
+            ENTER
           </span>
         </button>
       </div>
@@ -333,182 +291,127 @@ function PodcastCard({
   );
 }
 
-// ─── Zone C: Audio Mixer Slider ───
+// ─── Zone C: Player Controls ───
 
-function MixerSlider({
-  label,
-  value,
-  onChange,
-  accentColor = 'sky',
-  icon,
+function PlayerControls({
+  isPlaying,
+  track,
+  currentIndex,
+  tracks,
+  volume,
+  onTogglePlay,
+  onPrevious,
+  onNext,
+  onVolumeChange,
 }: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  accentColor?: 'sky' | 'cyan' | 'emerald';
-  icon: string;
+  isPlaying: boolean;
+  track: { name: string; icon: string };
+  currentIndex: number;
+  tracks: { name: string; icon: string }[];
+  volume: number;
+  onTogglePlay: () => void;
+  onPrevious: () => void;
+  onNext: () => void;
+  onVolumeChange: (v: number) => void;
 }) {
-  const colorMap = {
-    sky: { track: 'bg-sky-500/20', fill: 'bg-sky-400', thumb: 'border-sky-400', glow: 'rgba(56,189,248,0.3)' },
-    cyan: { track: 'bg-cyan-500/20', fill: 'bg-cyan-400', thumb: 'border-cyan-400', glow: 'rgba(34,211,238,0.3)' },
-    emerald: { track: 'bg-emerald-500/20', fill: 'bg-emerald-400', thumb: 'border-emerald-400', glow: 'rgba(52,211,153,0.3)' },
-  };
-  const c = colorMap[accentColor];
-
   return (
-    <div className="flex items-center gap-3 group">
-      <span className="w-5 text-center text-xs leading-none">{icon}</span>
-      <div className="flex-1">
-        <div className="flex justify-between items-center mb-1">
-          <span className="text-[9px] font-mono font-semibold tracking-widest text-slate-500 uppercase">
-            {label}
+    <div className="flex items-center gap-3">
+      {/* Track icon */}
+      <span className="text-lg leading-none">{track.icon}</span>
+
+      {/* Track info + controls */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-serif font-medium text-xs text-slate-300 truncate leading-snug">
+            {track.name}
           </span>
-          <span className="text-[10px] font-mono text-slate-600 tabular-nums">
-            {Math.round(value * 100)}%
-          </span>
+          {isPlaying && (
+            <span className="inline-block w-1 h-1 rounded-full bg-cyan-400/60 animate-pulse shrink-0" />
+          )}
         </div>
-        <div className="relative h-2">
-          {/* Track */}
-          <div className={`absolute inset-0 rounded-full ${c.track}`} />
-          {/* Fill */}
-          <div
-            className={`absolute top-0 left-0 h-full rounded-full ${c.fill} transition-[width] duration-75`}
-            style={{
-              width: `${value * 100}%`,
-              boxShadow: `0 0 6px ${c.glow}`,
-              opacity: 0.7,
-            }}
-          />
-          {/* Hidden range input */}
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.01}
-            value={value}
-            onChange={(e) => onChange(parseFloat(e.target.value))}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-          />
-          {/* Custom thumb */}
-          <div
-            className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full border-2 bg-slate-900 pointer-events-none
-              transition-shadow duration-150 group-hover:shadow-[0_0_8px_var(--thumb-glow)]"
-            style={{
-              left: `calc(${value * 100}% - 7px)`,
-              borderColor: c.thumb.replace('border-', ''),
-              '--thumb-glow': c.glow,
-            } as React.CSSProperties}
-          />
+
+        <div className="flex items-center gap-2 mt-1">
+          <button
+            onClick={onPrevious}
+            disabled={currentIndex === 0}
+            className="text-slate-600 hover:text-slate-400 disabled:opacity-20 disabled:cursor-not-allowed transition-colors duration-300"
+            aria-label="Previous track"
+          >
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+            </svg>
+          </button>
+
+          <button
+            onClick={onTogglePlay}
+            className="relative w-6 h-6 rounded-full flex items-center justify-center
+              transition-all duration-300
+              text-slate-400 hover:text-cyan-400"
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+          >
+            <div className="absolute inset-0 rounded-full opacity-0 hover:opacity-100
+              bg-cyan-500/[0.06] blur-md transition-opacity duration-500" />
+            {isPlaying ? (
+              <svg className="w-2.5 h-2.5 relative z-10" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16" rx="1" />
+                <rect x="14" y="4" width="4" height="16" rx="1" />
+              </svg>
+            ) : (
+              <svg className="w-2.5 h-2.5 relative z-10 ml-[1px]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+          </button>
+
+          <button
+            onClick={onNext}
+            disabled={currentIndex === tracks.length - 1}
+            className="text-slate-600 hover:text-slate-400 disabled:opacity-20 disabled:cursor-not-allowed transition-colors duration-300"
+            aria-label="Next track"
+          >
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16 6v12h2V6h-2zM6 18l8.5-6L6 6v12z" />
+            </svg>
+          </button>
+
+          {/* Volume */}
+          <div className="flex items-center gap-1.5 ml-2">
+            <svg className="w-2.5 h-2.5 text-slate-700" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 9v6h4l5 5V4L7 9H3z" />
+            </svg>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.02}
+              value={volume}
+              onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
+              className="w-16 h-0.5 appearance-none bg-slate-800 rounded-full cursor-pointer
+                [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-2
+                [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white/80
+                [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(34,211,238,0.2)]
+                [&::-webkit-slider-thumb]:transition-shadow [&::-webkit-slider-thumb]:duration-300
+                hover:[&::-webkit-slider-thumb]:shadow-[0_0_12px_rgba(34,211,238,0.4)]"
+            />
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Zone D: Telemetry Row ───
+// ─── Zone D: Telemetry ───
 
 function TelemetryRow({ label, value, unit, accent = false }: { label: string; value: string | number; unit?: string; accent?: boolean }) {
   return (
-    <div className="flex items-center justify-between py-1.5 px-2 rounded-lg bg-slate-900/40 border border-slate-800/30">
-      <span className="text-[10px] font-mono text-slate-500 tracking-wide">{label}</span>
-      <span className={`font-mono text-xs font-bold ${accent ? 'text-cyan-400' : 'text-slate-300'}`}>
+    <div>
+      <div className="text-[8px] font-mono tracking-wider text-slate-700 mb-0.5">{label}</div>
+      <div className={`font-mono text-sm font-medium leading-none ${accent ? 'text-cyan-400/90' : 'text-slate-300'}`}>
         {value}
-        {unit && <span className="text-[10px] text-slate-600 ml-0.5">{unit}</span>}
-      </span>
+        {unit && <span className="text-[9px] text-slate-700 ml-0.5">{unit}</span>}
+      </div>
     </div>
   );
-}
-
-// ─── Audio Mixer Engine (Web Audio API) ───
-
-function useMixerEngine() {
-  const ctxRef = useRef<AudioContext | null>(null);
-  const whiteNoiseGainRef = useRef<GainNode | null>(null);
-  const thrustGainRef = useRef<GainNode | null>(null);
-  const initializedRef = useRef(false);
-
-  const init = useCallback(() => {
-    if (initializedRef.current) return;
-    try {
-      const ctx = new AudioContext();
-      ctxRef.current = ctx;
-
-      // ── White Noise ──
-      const bufSize = ctx.sampleRate * 2;
-      const buffer = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
-
-      const wnSource = ctx.createBufferSource();
-      wnSource.buffer = buffer;
-      wnSource.loop = true;
-
-      const wnGain = ctx.createGain();
-      wnGain.gain.value = 0;
-      wnSource.connect(wnGain);
-      wnGain.connect(ctx.destination);
-      wnSource.start();
-      whiteNoiseGainRef.current = wnGain;
-
-      // ── Engine Thrust (filtered noise with LFO) ──
-      const thrustBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-      const thrustData = thrustBuf.getChannelData(0);
-      for (let i = 0; i < bufSize; i++) thrustData[i] = Math.random() * 2 - 1;
-
-      const thrustSource = ctx.createBufferSource();
-      thrustSource.buffer = thrustBuf;
-      thrustSource.loop = true;
-
-      const thrustFilter = ctx.createBiquadFilter();
-      thrustFilter.type = 'lowpass';
-      thrustFilter.frequency.value = 200;
-      thrustFilter.Q.value = 1.5;
-
-      const thrustGain = ctx.createGain();
-      thrustGain.gain.value = 0;
-      thrustSource.connect(thrustFilter);
-      thrustFilter.connect(thrustGain);
-      thrustGain.connect(ctx.destination);
-      thrustSource.start();
-      thrustGainRef.current = thrustGain;
-
-      // LFO for thrust modulation
-      const lfo = ctx.createOscillator();
-      lfo.type = 'sine';
-      lfo.frequency.value = 2.5;
-      const lfoGain = ctx.createGain();
-      lfoGain.gain.value = 120;
-      lfo.connect(lfoGain);
-      lfoGain.connect(thrustFilter.frequency);
-      lfo.start();
-
-      initializedRef.current = true;
-    } catch {
-      // AudioContext may not be available
-    }
-  }, []);
-
-  const setWhiteNoise = useCallback((vol: number) => {
-    if (whiteNoiseGainRef.current) {
-      whiteNoiseGainRef.current.gain.setTargetAtTime(vol * 0.08, ctxRef.current!.currentTime, 0.1);
-    }
-  }, []);
-
-  const setThrust = useCallback((vol: number) => {
-    if (thrustGainRef.current) {
-      thrustGainRef.current.gain.setTargetAtTime(vol * 0.06, ctxRef.current!.currentTime, 0.1);
-    }
-  }, []);
-
-  const dispose = useCallback(() => {
-    if (ctxRef.current) {
-      ctxRef.current.close();
-      ctxRef.current = null;
-      initializedRef.current = false;
-    }
-  }, []);
-
-  return { init, setWhiteNoise, setThrust, dispose };
 }
 
 // ─── Main: Cosmic Command Deck ───
@@ -521,64 +424,60 @@ export default function CosmicCommandDeck() {
 
   const [expanded, setExpanded] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  const hasInteractedRef = useRef(false);
 
-  const [mixerLevels, setMixerLevels] = useState<MixerLevels>({
-    whiteNoise: 0,
-    engineThrust: 0,
-    podcastVolume: volume,
-  });
-
-  const [telemetry, setTelemetry] = useState<TelemetryData>({
+  const [stats, setStats] = useState<SiteStats>({
     bestScore: 0,
     totalVisits: 0,
     todayVisits: 0,
+    totalComments: 0,
   });
 
-  const engine = useMixerEngine();
-
-  // ── Sync podcast volume ──
-  const handleMixerChange = useCallback((key: keyof MixerLevels, val: number) => {
-    setMixerLevels((prev) => ({ ...prev, [key]: val }));
-    if (key === 'podcastVolume') setVolume(val);
-    if (key === 'whiteNoise') engine.setWhiteNoise(val);
-    if (key === 'engineThrust') engine.setThrust(val);
-    if (!hasInteractedRef.current) {
-      hasInteractedRef.current = true;
-      engine.init();
-    }
-  }, [setVolume, engine]);
-
-  // ── Fetch telemetry ──
-  useEffect(() => {
+  const fetchStats = useCallback(async () => {
     const saved = localStorage.getItem('dino-best');
-    if (saved) setTelemetry((prev) => ({ ...prev, bestScore: parseInt(saved, 10) }));
+    const bestScore = saved ? parseInt(saved, 10) : 0;
+    setStats((prev) => ({ ...prev, bestScore }));
 
-    fetch('/api/visits')
-      .then((r) => r.json())
-      .then((data) => {
-        setTelemetry((prev) => ({
+    try {
+      const [visitsRes, commentsRes] = await Promise.all([
+        fetch('/api/visits'),
+        fetch('/api/comments'),
+      ]);
+      if (visitsRes.ok) {
+        const v = await visitsRes.json();
+        setStats((prev) => ({
           ...prev,
-          totalVisits: data.total ?? 0,
-          todayVisits: data.today ?? 0,
+          totalVisits: v.total ?? 0,
+          todayVisits: v.today ?? 0,
         }));
-      })
-      .catch(() => {});
+      }
+      if (commentsRes.ok) {
+        const c = await commentsRes.json();
+        if (Array.isArray(c)) {
+          setStats((prev) => ({ ...prev, totalComments: c.length }));
+        }
+      }
+    } catch {}
   }, []);
 
-  // ── Listen for score updates ──
+  useEffect(() => {
+    if (!expanded) return;
+    fetchStats();
+    const iv = setInterval(fetchStats, 15000);
+    return () => clearInterval(iv);
+  }, [expanded, fetchStats]);
+
+  // Listen for score updates from localStorage
   useEffect(() => {
     const handler = () => {
       const saved = localStorage.getItem('dino-best');
-      if (saved) setTelemetry((prev) => ({ ...prev, bestScore: parseInt(saved, 10) }));
+      if (saved) setStats((prev) => ({ ...prev, bestScore: parseInt(saved, 10) }));
     };
     window.addEventListener('storage', handler);
-    // Also poll for updates from the same tab
     const iv = setInterval(handler, 5000);
     return () => { window.removeEventListener('storage', handler); clearInterval(iv); };
   }, []);
 
-  // ── Close panel on outside click ──
+  // Close on outside click
   useEffect(() => {
     if (!expanded) return;
     const handler = (e: MouseEvent) => {
@@ -590,7 +489,6 @@ export default function CosmicCommandDeck() {
     return () => document.removeEventListener('mousedown', handler);
   }, [expanded]);
 
-  // ── Escape key ──
   useEffect(() => {
     if (!expanded) return;
     const handler = (e: KeyboardEvent) => {
@@ -600,66 +498,48 @@ export default function CosmicCommandDeck() {
     return () => document.removeEventListener('keydown', handler);
   }, [expanded]);
 
-  // ── Clean up mixer on unmount ──
-  useEffect(() => {
-    return () => engine.dispose();
-  }, [engine]);
-
-  // ── Podcast entry handler ──
   const handlePodcastEntry = useCallback((ep: PodcastEpisode) => {
-    // For now, just log. Could open Xiaoyuzhou link in future.
-    console.log('[Command Deck] Entry requested:', ep.podcastName, ep.episodeTitle);
-    // Quick visual feedback: pulse the button via state
+    console.log('[Command Deck] Entry:', ep.podcastName, ep.episodeTitle);
   }, []);
 
-  // ── Signal monitor tap ──
-  const handleSignalTap = useCallback(() => {
-    if (!isPlaying && !hasInteractedRef.current) {
-      hasInteractedRef.current = true;
-      engine.init();
-    }
-  }, [isPlaying, engine]);
-
-  // ── Collapsed trigger button ──
+  // ── Collapsed trigger ──
   const triggerButton = (
     <button
       onClick={() => setExpanded(!expanded)}
       className={`
         relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs
-        transition-all duration-300
+        transition-all duration-500
         ${expanded || isPlaying
-          ? 'bg-sky-500/10 border border-sky-400/20 text-sky-400'
-          : 'text-foreground/50 hover:text-foreground/70 hover:bg-white/5 border border-transparent'
+          ? 'text-cyan-400/80'
+          : 'text-slate-500 hover:text-slate-400'
         }
       `}
       aria-label="Cosmic Command Deck"
-      title="Cosmic Command Deck"
     >
       {isPlaying ? (
         <span className="flex items-end gap-[1.5px] h-3">
           {[0,1,2,3].map((i) => (
             <span
               key={i}
-              className="w-[2px] bg-sky-400 rounded-full transition-all duration-75"
+              className="w-[1.5px] bg-cyan-400/60 rounded-full"
               style={{
-                height: `${2 + Math.random() * 12}px`,
-                opacity: 0.6 + Math.random() * 0.4,
-                boxShadow: '0 0 4px rgba(56,189,248,0.3)',
+                height: `${2 + (i + 1) * 2}px`,
+                transition: 'height 0.3s',
               }}
             />
           ))}
         </span>
       ) : expanded ? (
-        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
           <path d="M6 9l6 6 6-6" />
         </svg>
       ) : (
-        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
           <circle cx="12" cy="12" r="2" />
           <path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
         </svg>
       )}
-      <span className="hidden sm:inline text-[10px] font-semibold tracking-wider">
+      <span className="hidden sm:inline text-[9px] font-semibold tracking-widest">
         COMMAND DECK
       </span>
     </button>
@@ -667,211 +547,120 @@ export default function CosmicCommandDeck() {
 
   return (
     <div className="relative" ref={panelRef}>
+      {/* Ambient glow behind trigger when playing */}
+      <div
+        className={`absolute -inset-3 rounded-full opacity-0 blur-3xl transition-opacity duration-1000 pointer-events-none
+          ${isPlaying ? 'opacity-30' : ''}`}
+        style={{
+          background: 'radial-gradient(circle, rgba(34,211,238,0.08) 0%, transparent 70%)',
+        }}
+      />
       {triggerButton}
 
       <AnimatePresence>
         {expanded && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 8 }}
+            initial={{ opacity: 0, scale: 0.94, y: 6 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 8 }}
-            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            exit={{ opacity: 0, scale: 0.94, y: 6 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="absolute right-0 top-full mt-2 z-50 origin-top-right"
           >
-            {/* ── Main Bento Panel ── */}
+            {/* ── Panel ── */}
             <div
-              className="w-[720px] max-w-[calc(100vw-32px)] p-3.5 rounded-2xl
-                backdrop-blur-2xl bg-[#020617]/85
-                border-2 border-slate-800/80
-                shadow-[0_0_60px_rgba(56,189,248,0.12)]
+              className="w-[520px] max-w-[calc(100vw-32px)]
+                bg-[#030712]/95 backdrop-blur-2xl
+                border border-slate-800/60
+                rounded-2xl
+                shadow-[0_0_80px_rgba(34,211,238,0.06)]
                 overflow-hidden"
-              style={{ animationFillMode: 'both' }}
             >
-              {/* ── Header bar ── */}
-              <div className="flex items-center justify-between mb-3 px-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold tracking-[0.25em] text-sky-400/90 uppercase">
-                    ⚡ Cosmic Command Deck
+              {/* Subtle top sheen */}
+              <div className="h-px bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent" />
+
+              {/* ── Header ── */}
+              <div className="flex items-center justify-between px-5 pt-4 pb-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-[9px] font-semibold tracking-[0.3em] text-slate-500 uppercase">
+                    Cosmic Command Deck
                   </span>
-                  <span className="text-[9px] font-mono text-slate-600 bg-slate-900/60 px-1.5 py-0.5 rounded border border-slate-800/50">
-                    v.OS::STARLINK
+                  <span className="text-[7px] font-mono text-slate-800 px-1.5 py-0.5 rounded
+                    border border-slate-800/60 bg-slate-900/50 tracking-wider">
+                    OS::STARLINK
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  {/* Mini spectrum status */}
-                  <div className="flex items-end gap-[1.5px] h-3 px-1.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <span
-                        key={i}
-                        className="w-[2px] rounded-full transition-all duration-150"
-                        style={{
-                          height: `${2 + Math.random() * 10}px`,
-                          background: isPlaying
-                            ? `rgba(56,189,248,${0.4 + Math.random() * 0.6})`
-                            : 'rgba(71,85,105,0.4)',
-                          boxShadow: isPlaying ? '0 0 4px rgba(56,189,248,0.2)' : 'none',
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => setExpanded(false)}
-                    className="text-slate-600 hover:text-slate-300 transition p-0.5 rounded hover:bg-slate-800/50"
-                    aria-label="Close command deck"
-                  >
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                      <path d="M18 6L6 18M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
+                <button
+                  onClick={() => setExpanded(false)}
+                  className="text-slate-700 hover:text-slate-500 transition-colors duration-300 p-0.5"
+                  aria-label="Close"
+                >
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
 
-              {/* ── Bento Grid ── */}
-              <div className="flex gap-3">
-                {/* Left column (A + C + D) */}
-                <div className="w-[240px] shrink-0 flex flex-col gap-3">
-                  {/* ── Zone A: Signal Monitor ── */}
-                  <div className="relative p-3 rounded-xl border border-slate-800/60 bg-slate-950/40 overflow-hidden">
-                    <CornerBrackets />
-                    <ZoneLabel label="Signal Monitor" />
-                    <SignalMonitor
-                      isPlaying={isPlaying}
-                      mixerLevels={mixerLevels}
-                      onInteraction={handleSignalTap}
+              {/* ── Zone A: Spectrum Monitor ── */}
+              <div className="px-5 pb-3">
+                <ZoneLabel label="Signal Monitor" />
+                <SpectrumMonitor isPlaying={isPlaying} volume={volume} />
+              </div>
+
+              <SectionDivider />
+
+              {/* ── Zone C: Player + Zone B: Podcast Deck ── */}
+              <div className="px-5 pt-3 pb-2">
+                <PlayerControls
+                  isPlaying={isPlaying}
+                  track={track}
+                  currentIndex={currentIndex}
+                  tracks={tracks}
+                  volume={volume}
+                  onTogglePlay={togglePlay}
+                  onPrevious={() => selectTrack(currentIndex - 1)}
+                  onNext={() => selectTrack(currentIndex + 1)}
+                  onVolumeChange={setVolume}
+                />
+              </div>
+
+              <div className="px-5 py-2">
+                <ZoneLabel label="Podcast Deck" />
+                <div className="space-y-px">
+                  {PODCASTS.map((ep, i) => (
+                    <PodcastCard
+                      key={ep.id}
+                      episode={ep}
+                      index={i}
+                      onEntry={handlePodcastEntry}
                     />
-                  </div>
-
-                  {/* ── Zone C: Audio Mixer ── */}
-                  <div className="relative p-3 rounded-xl border border-slate-800/60 bg-slate-950/40 overflow-hidden">
-                    <CornerBrackets />
-                    <ZoneLabel label="Audio Mixer" />
-
-                    <div className="space-y-3">
-                      <MixerSlider
-                        label="WHITE NOISE"
-                        icon="▦"
-                        value={mixerLevels.whiteNoise}
-                        onChange={(v) => handleMixerChange('whiteNoise', v)}
-                        accentColor="sky"
-                      />
-                      <MixerSlider
-                        label="ENGINE THRUST"
-                        icon="⟐"
-                        value={mixerLevels.engineThrust}
-                        onChange={(v) => handleMixerChange('engineThrust', v)}
-                        accentColor="cyan"
-                      />
-                      <MixerSlider
-                        label="PODCAST VOL"
-                        icon="♪"
-                        value={mixerLevels.podcastVolume}
-                        onChange={(v) => handleMixerChange('podcastVolume', v)}
-                        accentColor="emerald"
-                      />
-                    </div>
-                  </div>
-
-                  {/* ── Zone D: Telemetry ── */}
-                  <div className="relative p-3 rounded-xl border border-slate-800/60 bg-slate-950/40 overflow-hidden">
-                    <CornerBrackets />
-                    <ZoneLabel label="Telemetry" accent />
-
-                    <div className="space-y-1.5">
-                      <TelemetryRow
-                        label="BEST_SCORE"
-                        value={telemetry.bestScore.toLocaleString()}
-                        unit="LY"
-                        accent
-                      />
-                      <TelemetryRow
-                        label="TOTAL_VISITS"
-                        value={telemetry.totalVisits.toLocaleString()}
-                      />
-                      <TelemetryRow
-                        label="TODAY_VISITS"
-                        value={telemetry.todayVisits.toLocaleString()}
-                      />
-
-                      {/* System status indicator */}
-                      <div className="flex items-center gap-2 pt-1 mt-1 border-t border-slate-800/40">
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.5)] animate-pulse" />
-                        <span className="text-[9px] font-mono text-slate-600">SYS::NOMINAL</span>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-
-                {/* ── Right column (Zone B: Podcast Deck) ── */}
-                <div className="flex-1 relative p-3 rounded-xl border border-slate-800/60 bg-slate-950/40 overflow-hidden">
-                  <CornerBrackets />
-                  <ZoneLabel label="Podcast Deck" accent />
-
-                  {/* Player controls */}
-                  <div className="flex items-center justify-between mb-3 px-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-slate-400 font-mono">
-                        {track.icon} {track.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => selectTrack(currentIndex - 1)}
-                        disabled={currentIndex === 0}
-                        className="text-slate-500 hover:text-sky-400 disabled:opacity-20 disabled:cursor-not-allowed transition p-1 rounded hover:bg-slate-800/50"
-                        aria-label="Previous track"
-                      >
-                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
-                        </svg>
-                      </button>
-
-                      <button
-                        onClick={togglePlay}
-                        className="w-7 h-7 rounded-full bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/20 flex items-center justify-center transition"
-                        aria-label={isPlaying ? 'Pause' : 'Play'}
-                      >
-                        {isPlaying ? (
-                          <svg className="w-3 h-3 text-sky-400" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M6 4h4v16H6zM14 4h4v16h-4z" />
-                          </svg>
-                        ) : (
-                          <svg className="w-3 h-3 text-sky-400 ml-[1px]" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
-                        )}
-                      </button>
-
-                      <button
-                        onClick={() => selectTrack(currentIndex + 1)}
-                        disabled={currentIndex === tracks.length - 1}
-                        className="text-slate-500 hover:text-sky-400 disabled:opacity-20 disabled:cursor-not-allowed transition p-1 rounded hover:bg-slate-800/50"
-                        aria-label="Next track"
-                      >
-                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Podcast cards */}
-                  <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1 custom-scrollbar">
-                    {PODCASTS.map((ep, i) => (
-                      <PodcastCard
-                        key={ep.id}
-                        episode={ep}
-                        index={i}
-                        onEntry={handlePodcastEntry}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Footer note */}
-                  <div className="mt-2 text-[9px] text-slate-700 text-center font-mono tracking-wider">
-                    {PODCASTS.length} EPISODES IN QUEUE · POWERED BY XIAOYUZHOU FM
-                  </div>
+                <div className="mt-2 pb-1 text-center">
+                  <span className="text-[7px] font-mono text-slate-800 tracking-widest">
+                    {PODCASTS.length} EPISODES · XIAOYUZHOU FM
+                  </span>
                 </div>
               </div>
+
+              <SectionDivider />
+
+              {/* ── Zone D: Telemetry ── */}
+              <div className="px-5 pt-3 pb-4">
+                <ZoneLabel label="Telemetry" />
+                <div className="grid grid-cols-5 gap-4">
+                  <TelemetryRow label="BEST_SCORE" value={stats.bestScore.toLocaleString()} unit="LY" accent />
+                  <TelemetryRow label="TOTAL_VISITS" value={stats.totalVisits.toLocaleString()} />
+                  <TelemetryRow label="TODAY" value={stats.todayVisits.toLocaleString()} />
+                  <TelemetryRow label="COMMENTS" value={stats.totalComments.toLocaleString()} />
+                  <TelemetryRow
+                    label="SYS_STATUS"
+                    value="NOMINAL"
+                  />
+                </div>
+              </div>
+
+              {/* Bottom subtle glow line */}
+              <div className="h-px bg-gradient-to-r from-transparent via-slate-800/40 to-transparent" />
             </div>
           </motion.div>
         )}

@@ -37,8 +37,24 @@ async function writeLocalComments(comments: Comment[]): Promise<void> {
 
 export async function GET(request: NextRequest) {
   const postSlug = request.nextUrl.searchParams.get('post_slug');
+
+  // When no post_slug, return most recent comments across all posts
   if (!postSlug) {
-    return NextResponse.json({ error: 'post_slug is required' }, { status: 400 });
+    try {
+      const result = await query(
+        `SELECT c.*, u.nickname, u.avatar_url
+         FROM comments c
+         LEFT JOIN users u ON c.user_id = u.id
+         ORDER BY c.created_at DESC
+         LIMIT 10`
+      );
+      if (result.rows.length > 0) return NextResponse.json(result.rows);
+    } catch {}
+
+    const allComments = await readLocalComments();
+    return NextResponse.json(allComments.sort((a, b) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    ).slice(0, 10));
   }
 
   try {
