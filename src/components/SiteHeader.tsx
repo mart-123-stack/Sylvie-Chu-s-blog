@@ -21,8 +21,8 @@ export default function SiteHeader() {
   return (
     <nav className={`sticky top-0 z-50 transition-all duration-300 ${
       scrolled
-        ? 'bg-white/90 backdrop-blur-md shadow-md border-b border-sky-100 dark:bg-slate-900/90 dark:border-slate-700'
-        : 'bg-white/80 backdrop-blur-sm shadow-sm border-b border-sky-100/60 dark:bg-slate-900/80 dark:border-slate-700/60'
+        ? 'bg-white/80 backdrop-blur-xl shadow-md border-b border-sky-100/70 dark:bg-slate-900/60 dark:border-slate-700/50'
+        : 'bg-white/60 backdrop-blur-lg shadow-sm border-b border-sky-100/40 dark:bg-slate-900/40 dark:border-slate-700/30'
     }`}>
       <div className="max-w-6xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
