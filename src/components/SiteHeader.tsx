@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useTheme } from '@/lib/theme-context';
+import CosmicCommandDeck from '@/components/CosmicCommandDeck';
 
 export default function SiteHeader() {
   const { user, token, isAdmin, authLoaded } = useAuth();
@@ -41,7 +42,6 @@ export default function SiteHeader() {
             <Link href="/about" className="nav-link text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition-colors">About</Link>
             <Link href="/gallery" className="nav-link text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition-colors">Gallery</Link>
             <Link href="/visitors" className="nav-link text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition-colors">Visitors</Link>
-            <Link href="/canvas-fomo" className="nav-link text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 transition-colors">Canvas FOMO</Link>
             {authLoaded && (token || user) ? (
               <>
                 {isAdmin ? (
@@ -59,6 +59,7 @@ export default function SiteHeader() {
                 Login
               </Link>
             )}
+            <CosmicCommandDeck />
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg text-foreground/70 hover:text-sky-700 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-800 transition"

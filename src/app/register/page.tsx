@@ -36,7 +36,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50 dark:from-sky-950 dark:to-indigo-950 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50 dark:from-sky-950 dark:to-blue-950 flex items-center justify-center">
       <div className="glass-card rounded-xl p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-sky-900 dark:text-white mb-6">Register</h1>
         <form onSubmit={handleSubmit}>

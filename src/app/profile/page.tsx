@@ -14,7 +14,7 @@ interface Favorite {
 }
 
 export default function ProfilePage() {
-  const { user, token, isAdmin, authLoaded, logout, refreshUser } = useAuth();
+  const { user, token, isAdmin, authLoaded, logout, refreshUser, setAuthToken } = useAuth();
   const router = useRouter();
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,21 +99,24 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     setMessage('');
+    // Read token directly from localStorage to avoid stale React state
+    const t = localStorage.getItem('token');
+    if (!t) { setMessage('Not logged in'); setSaving(false); return; }
     try {
       const res = await fetch('/api/profile', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${t}`,
         },
         body: JSON.stringify({ nickname, bio, location, avatar_url: avatarUrl || null }),
       });
       const data = await res.json();
       if (data.error) {
-        setMessage(data.error);
+        setMessage(data.error === 'Unauthorized' ? 'Session expired, please login again' : data.error);
       } else {
         if (data.token) {
-          localStorage.setItem('token', data.token);
+          setAuthToken(data.token);
         }
         await refreshUser();
         setMessage('Profile updated!');
@@ -141,7 +144,7 @@ export default function ProfilePage() {
   if (!token || isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50 dark:from-sky-950 dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50 dark:from-sky-950 dark:to-blue-950">
 
       <main className="max-w-4xl mx-auto px-4 py-12">
         <div className="flex items-center justify-between mb-8">

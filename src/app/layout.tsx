@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { AudioProvider } from "@/lib/audio-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import SiteHeader from "@/components/SiteHeader";
 import PageTransition from "@/components/PageTransition";
@@ -51,11 +52,13 @@ export default function RootLayout({
       <body className={`antialiased ${fontSans.variable} ${fontSerif.variable} ${fontMono.variable}`}>
         <ThemeProvider>
           <AuthProvider>
-            <SiteHeader />
-            <PageTransition>{children}</PageTransition>
-            <VisitTracker />
-            <StarField />
-            <CloudCompanion />
+            <AudioProvider>
+              <SiteHeader />
+              <PageTransition>{children}</PageTransition>
+              <VisitTracker />
+              <StarField />
+              <CloudCompanion />
+            </AudioProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

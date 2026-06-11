@@ -21,6 +21,7 @@ interface AuthContextType {
   adminLogin: (password: string) => Promise<string | null>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  setAuthToken: (token: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -52,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setUser(data.user);
     setToken(data.token);
+    setIsAdmin(false);
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     localStorage.removeItem('isAdmin');
@@ -69,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setUser(data.user);
     setToken(data.token);
+    setIsAdmin(false);
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     localStorage.removeItem('isAdmin');
@@ -87,10 +90,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(data.token);
     setIsAdmin(true);
     localStorage.setItem('token', data.token);
+    localStorage.setItem('adminToken', data.token);
     localStorage.setItem('isAdmin', 'true');
     setUser(null);
     localStorage.removeItem('user');
     return null;
+  }, []);
+
+  const setAuthToken = useCallback((newToken: string | null) => {
+    setToken(newToken);
+    if (newToken) {
+      localStorage.setItem('token', newToken);
+    } else {
+      localStorage.removeItem('token');
+    }
   }, []);
 
   const refreshUser = useCallback(async () => {
@@ -113,12 +126,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setIsAdmin(false);
     localStorage.removeItem('token');
+    localStorage.removeItem('adminToken');
     localStorage.removeItem('user');
     localStorage.removeItem('isAdmin');
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, isAdmin, authLoaded, login, register, adminLogin, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, isAdmin, authLoaded, login, register, adminLogin, logout, refreshUser, setAuthToken }}>
       {children}
     </AuthContext.Provider>
   );

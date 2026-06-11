@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   const user = await getUserFromRequest(request);
   if (!user) {
+    console.warn("[game/score] POST rejected: no valid user from token");
     return NextResponse.json({ error: "Please login to save scores" }, { status: 401 });
   }
 
@@ -24,9 +25,10 @@ export async function POST(request: NextRequest) {
       [user.id, Math.floor(score)]
     );
 
+    console.log(`[game/score] ${user.nickname} (${user.id}) saved score=${Math.floor(score)}`);
     return NextResponse.json({ saved: true });
   } catch (err) {
-    console.error("Failed to save score:", err);
+    console.error("[game/score] Failed to save score:", err);
     return NextResponse.json({ error: "Failed to save score" }, { status: 500 });
   }
 }
@@ -39,7 +41,7 @@ export async function GET() {
        FROM game_scores gs
        JOIN users u ON gs.user_id = u.id
        ORDER BY gs.score DESC
-       LIMIT 20`
+       LIMIT 10`
     );
 
     const board = result.rows.map((row, i) => ({
@@ -50,10 +52,10 @@ export async function GET() {
       date: row.created_at ? new Date(row.created_at).toLocaleDateString() : "",
     }));
 
+    console.log(`[game/score] GET leaderboard returned ${board.length} entries`);
     return NextResponse.json(board);
   } catch (err) {
-    console.error("Failed to fetch leaderboard:", err);
-    // Fallback: return empty board if DB unavailable
+    console.error("[game/score] Failed to fetch leaderboard:", err);
     return NextResponse.json([]);
   }
 }

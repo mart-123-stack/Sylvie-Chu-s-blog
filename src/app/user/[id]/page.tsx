@@ -65,7 +65,7 @@ export default async function UserPage({ params }: { params: { id: string } }) {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-950">
 
       <main className="max-w-4xl mx-auto px-4 py-12">
         <Link href="/" className="text-sm text-foreground/50 hover:text-sky-600 dark:hover:text-sky-400 transition-colors mb-6 inline-block">

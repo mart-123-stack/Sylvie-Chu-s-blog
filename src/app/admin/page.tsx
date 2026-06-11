@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/lib/auth-context';
 
 interface Post {
   id: string;
@@ -15,6 +16,7 @@ interface Post {
 }
 
 export default function AdminPage() {
+  const { adminLogin, logout: authLogout } = useAuth();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [posts, setPosts] = useState<Post[]>([]);
@@ -22,8 +24,8 @@ export default function AdminPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
-    if (token) {
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+    if (token && localStorage.getItem('isAdmin')) {
       setIsAuthenticated(true);
       fetchPosts();
     }
@@ -48,31 +50,19 @@ export default function AdminPage() {
     setLoading(true);
     setError('');
 
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        localStorage.setItem('adminToken', data.token);
-        setIsAuthenticated(true);
-        fetchPosts();
-      } else {
-        setError('Invalid password');
-      }
-    } catch (err) {
-      setError('Login failed');
-    } finally {
+    const err = await adminLogin(password);
+    if (err) {
+      setError(err);
       setLoading(false);
+    } else {
+      setIsAuthenticated(true);
+      setLoading(false);
+      fetchPosts();
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
+    authLogout();
     setIsAuthenticated(false);
     setPosts([]);
   };
@@ -80,7 +70,7 @@ export default function AdminPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this post?')) return;
 
-    const token = localStorage.getItem('adminToken');
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
     try {
       const response = await fetch(`/api/posts/${id}`, {
         method: 'DELETE',
@@ -97,7 +87,7 @@ export default function AdminPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-indigo-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-blue-950 flex items-center justify-center">
         <div className="bg-white dark:bg-sky-950 rounded-lg shadow-lg shadow-sky-100 dark:shadow-sky-900/20 p-8 w-full max-w-md border border-sky-100 dark:border-sky-900">
           <h1 className="text-2xl font-bold text-sky-900 dark:text-white mb-6">Admin Login</h1>
           <form onSubmit={handleLogin}>
@@ -129,7 +119,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-blue-950">
       <nav className="bg-white dark:bg-sky-950 shadow-sm border-b border-sky-100 dark:border-sky-900">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">

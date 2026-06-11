@@ -34,16 +34,19 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont,
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Helvetica Neue", Arial, sans-serif;
   font-size: 1.0625rem;
   line-height: 1.75;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Typography scale */
+/* Typography scale — Chinese text falls back to Songti SC for headings */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-serif), Georgia, serif;
+  font-family: var(--font-serif), "Songti SC", STSong, "Noto Serif SC",
+    "Source Han Serif SC", Georgia, serif;
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.02em;
@@ -216,4 +219,19 @@ code, pre {
     0 1px 2px rgba(0, 0, 0, 0.1),
     0 8px 16px rgba(0, 0, 0, 0.2),
     0 16px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* SpaceRadio panel enter — spring-like cubic-bezier */
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-panel-enter {
+  animation: panel-enter 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

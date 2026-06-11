@@ -21,8 +21,13 @@ interface AboutConfig {
   avatar?: string;
 }
 
+function getAdminToken(): string | null {
+  return localStorage.getItem('adminToken') || localStorage.getItem('token') || null;
+}
+
 export default function AdminAboutPage() {
   const router = useRouter();
+  const [authed, setAuthed] = useState(false);
   const [formData, setFormData] = useState<AboutConfig>({
     name: '',
     initials: '',
@@ -80,6 +85,9 @@ export default function AdminAboutPage() {
   };
 
   useEffect(() => {
+    const token = getAdminToken();
+    if (!token || !localStorage.getItem('isAdmin')) { router.push('/admin'); return; }
+    setAuthed(true);
     fetchConfig();
   }, []);
 
@@ -100,7 +108,7 @@ export default function AdminAboutPage() {
     setLoading(true);
     setError('');
 
-    const token = localStorage.getItem('adminToken');
+    const token = getAdminToken();
     try {
       const response = await fetch('/api/config/about', {
         method: 'PUT',
@@ -163,16 +171,16 @@ export default function AdminAboutPage() {
     setFormData({ ...formData, experience: newExperience });
   };
 
-  if (fetching) {
+  if (!authed || fetching) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-indigo-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-blue-950 flex items-center justify-center">
         <p className="text-sky-900 dark:text-white">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-blue-950">
       <nav className="bg-white dark:bg-sky-950 shadow-sm border-b border-sky-100 dark:border-sky-900">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">

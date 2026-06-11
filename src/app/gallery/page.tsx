@@ -9,7 +9,7 @@ export default async function GalleryPage() {
   const photos = await getPhotos();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50 dark:from-slate-900 dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50 dark:from-slate-900 dark:to-blue-950">
 
       <main className="max-w-6xl mx-auto px-4 py-12">
         <h2 className="text-5xl font-bold leading-tight tracking-tight text-sky-900 dark:text-white mb-8">Photo Gallery</h2>

@@ -122,11 +122,11 @@ export default function StarField() {
         ctx.stroke();
       }
 
-      // Subtle vignette overlay for content readability
+      // Subtle vignette overlay — consistent cool blue tone throughout
       const vg = ctx.createRadialGradient(w * 0.5, h * 0.45, h * 0.15, w * 0.5, h * 0.45, Math.max(w, h) * 0.7);
-      vg.addColorStop(0, 'rgba(15, 23, 42, 0.0)');
-      vg.addColorStop(0.5, 'rgba(15, 23, 42, 0.15)');
-      vg.addColorStop(1, 'rgba(15, 23, 42, 0.55)');
+      vg.addColorStop(0, 'rgba(3, 10, 30, 0.0)');
+      vg.addColorStop(0.5, 'rgba(3, 10, 30, 0.15)');
+      vg.addColorStop(1, 'rgba(3, 10, 30, 0.55)');
       ctx.fillStyle = vg;
       ctx.fillRect(0, 0, w, h);
 

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function VisitorsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-950">
 
       <main className="max-w-5xl mx-auto px-4 py-12">
         <AnimatedSection animation="fade-in-up">

@@ -1,0 +1,160 @@
+uid=20_0 RootWebArea "Sylive Chu's Blog" url="http://localhost:3333/"
+  uid=21_0 ignored
+    uid=21_1 ignored
+      uid=21_2 generic
+        uid=20_1 alert atomic live="assertive" relevant="additions text"
+      uid=20_2 navigation
+        uid=21_3 ignored
+          uid=21_4 ignored
+            uid=20_3 link "小蓝 Sylive Chu's Blog" url="http://localhost:3333/"
+              uid=20_4 image "小蓝" url="http://localhost:3333/images/mascot.jpg"
+              uid=21_5 ignored
+                uid=20_5 StaticText "Sylive Chu's Blog"
+                  uid=21_6 InlineTextBox "Sylive Chu's Blog"
+            uid=21_7 ignored
+              uid=20_6 link "Home" url="http://localhost:3333/"
+                uid=20_7 StaticText "Home"
+                  uid=21_6 InlineTextBox "Home"
+              uid=20_8 link "Blog" url="http://localhost:3333/blog"
+                uid=20_9 StaticText "Blog"
+                  uid=21_6 InlineTextBox "Blog"
+              uid=20_10 link "About" url="http://localhost:3333/about"
+                uid=20_11 StaticText "About"
+                  uid=21_6 InlineTextBox "About"
+              uid=20_12 link "Gallery" url="http://localhost:3333/gallery"
+                uid=20_13 StaticText "Gallery"
+                  uid=21_6 InlineTextBox "Gallery"
+              uid=20_14 link "Visitors" url="http://localhost:3333/visitors"
+                uid=20_15 StaticText "Visitors"
+                  uid=21_6 InlineTextBox "Visitors"
+              uid=20_16 link "Login" url="http://localhost:3333/login"
+                uid=20_17 StaticText "Login"
+                  uid=21_6 InlineTextBox "Login"
+              uid=20_18 button "Toggle theme" description="Switch to light mode"
+                uid=21_8 image
+      uid=21_9 ignored
+        uid=21_10 ignored
+          uid=20_19 main
+            uid=21_11 generic
+              uid=21_12 generic
+                uid=21_13 generic
+                  uid=20_20 image "小蓝" url="http://localhost:3333/images/mascot-cutout.jpg"
+              uid=21_14 generic
+              uid=21_15 generic
+                uid=20_21 heading "Welcome to My Personal Blog" level="2"
+                  uid=21_16 StaticText "Welcome to My Personal Blog"
+                    uid=21_6 InlineTextBox "Welcome to My Personal Blog"
+                uid=21_17 paragraph
+                  uid=20_22 StaticText "Sharing thoughts, experiences, and moments"
+                    uid=21_6 InlineTextBox "Sharing thoughts, experiences, and moments"
+            uid=21_18 ignored
+              uid=20_23 link "Blog Posts Read my latest articles and thoughts on technology, life, and everything in between. Browse articles → Featured" url="http://localhost:3333/blog"
+                uid=21_19 generic
+                uid=21_20 ignored
+                  uid=21_21 ignored
+                    uid=21_22 image
+                  uid=20_24 heading "Blog Posts" level="3"
+                    uid=21_23 StaticText "Blog Posts"
+                      uid=21_6 InlineTextBox "Blog Posts"
+                  uid=21_24 paragraph
+                    uid=20_25 StaticText "Read my latest articles and thoughts on technology, life, and everything in between."
+                      uid=21_6 InlineTextBox "Read my latest articles and thoughts on technology, "
+                      uid=21_6 InlineTextBox "life, and everything in between."
+                uid=21_25 ignored
+                  uid=21_26 ignored
+                    uid=20_26 StaticText "Browse articles →"
+                      uid=21_6 InlineTextBox "Browse articles →"
+                  uid=21_27 ignored
+                    uid=20_27 StaticText "Featured"
+                      uid=21_6 InlineTextBox "Featured"
+              uid=20_28 link "About Me Learn more about my background" url="http://localhost:3333/about"
+                uid=21_28 ignored
+                  uid=21_29 ignored
+                    uid=21_30 image
+                  uid=20_29 heading "About Me" level="3"
+                    uid=21_31 StaticText "About Me"
+                      uid=21_6 InlineTextBox "About Me"
+                  uid=21_32 paragraph
+                    uid=20_30 StaticText "Learn more about my background"
+                      uid=21_6 InlineTextBox "Learn more about my background"
+              uid=20_31 link "Photo Gallery Browse through my photos" url="http://localhost:3333/gallery"
+                uid=21_33 ignored
+                  uid=21_34 ignored
+                    uid=21_35 image
+                  uid=20_32 heading "Photo Gallery" level="3"
+                    uid=21_36 StaticText "Photo Gallery"
+                      uid=21_6 InlineTextBox "Photo Gallery"
+                  uid=21_37 paragraph
+                    uid=20_33 StaticText "Browse through my photos"
+                      uid=21_6 InlineTextBox "Browse through my photos"
+            uid=21_38 ignored
+              uid=21_39 ignored
+                uid=21_40 ignored
+                  uid=21_41 ignored
+                    uid=20_34 heading "☁️ Sky Dash" level="3"
+                      uid=21_42 StaticText "☁️ Sky Dash"
+                        uid=21_6 InlineTextBox "☁️ Sky Dash"
+                    uid=21_43 paragraph
+                      uid=20_35 StaticText "Jump over cacti & snakes, collect 🪙 coins"
+                        uid=21_6 InlineTextBox "Jump over cacti & snakes, collect 🪙 coins"
+                  uid=21_44 ignored
+                    uid=20_36 button "🏆 Scores" description="Leaderboard"
+                      uid=21_45 StaticText "🏆 "
+                        uid=21_6 InlineTextBox "🏆 "
+                      uid=21_46 StaticText "Scores"
+                        uid=21_6 InlineTextBox "Scores"
+                    uid=21_47 ignored
+                      uid=20_37 button "vv"
+                        uid=21_48 image
+                        uid=21_49 StaticText "vv"
+                          uid=21_6 InlineTextBox "vv"
+                      uid=20_38 button "cc"
+                        uid=21_50 image
+                        uid=21_51 StaticText "cc"
+                          uid=21_6 InlineTextBox "cc"
+                      uid=20_39 button "Rusty"
+                        uid=21_52 image
+                        uid=21_53 StaticText "Rusty"
+                          uid=21_6 InlineTextBox "Rusty"
+                uid=21_54 Canvas
+          uid=20_40 contentinfo
+            uid=21_55 ignored
+            uid=21_56 ignored
+              uid=21_57 ignored
+                uid=21_58 ignored
+                  uid=20_41 link "Sylive Chu's Blog" url="http://localhost:3333/"
+                    uid=20_42 StaticText "Sylive Chu's Blog"
+                      uid=21_6 InlineTextBox "Sylive Chu's Blog"
+                  uid=21_59 paragraph
+                    uid=20_43 StaticText "Sharing thoughts, experiences, and moments"
+                      uid=21_6 InlineTextBox "Sharing thoughts, experiences, and moments"
+                uid=21_60 ignored
+                  uid=20_44 link "Blog" url="http://localhost:3333/blog"
+                    uid=20_45 StaticText "Blog"
+                      uid=21_6 InlineTextBox "Blog"
+                  uid=20_46 link "About" url="http://localhost:3333/about"
+                    uid=20_47 StaticText "About"
+                      uid=21_6 InlineTextBox "About"
+                  uid=20_48 link "Gallery" url="http://localhost:3333/gallery"
+                    uid=20_49 StaticText "Gallery"
+                      uid=21_6 InlineTextBox "Gallery"
+                  uid=20_50 link "RSS" url="http://localhost:3333/feed.xml"
+                    uid=21_61 image
+                    uid=20_51 StaticText "RSS"
+                      uid=21_6 InlineTextBox "RSS"
+                  uid=20_52 link "GitHub" url="https://github.com/mart-123-stack"
+                    uid=21_62 image
+                    uid=20_53 StaticText "GitHub"
+                      uid=21_6 InlineTextBox "GitHub"
+              uid=21_63 ignored
+                uid=21_64 paragraph
+                  uid=20_54 StaticText "© "
+                    uid=21_6 InlineTextBox "© "
+                  uid=20_55 StaticText "2026"
+                    uid=21_6 InlineTextBox "2026"
+                  uid=20_56 StaticText " Sylive Chu's Blog. All rights reserved."
+                    uid=21_6 InlineTextBox " Sylive Chu's Blog. All rights reserved."
+      uid=21_65 Canvas
+      uid=21_66 generic
+        uid=21_67 ignored
+          uid=20_57 link "Home" url="http://localhost:3333/"

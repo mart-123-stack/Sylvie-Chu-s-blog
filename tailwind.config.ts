@@ -17,12 +17,12 @@ const config: Config = {
       typography: {
         DEFAULT: {
           css: {
-            fontFamily: 'var(--font-sans), system-ui, sans-serif',
+            fontFamily: 'var(--font-sans), -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif',
             fontSize: '1.0625rem',
             lineHeight: '1.75',
             maxWidth: '65ch',
             'h1, h2, h3, h4': {
-              fontFamily: 'var(--font-serif), Georgia, serif',
+              fontFamily: 'var(--font-serif), "Songti SC", STSong, "Noto Serif SC", "Source Han Serif SC", Georgia, serif',
               fontWeight: '700',
               letterSpacing: '-0.02em',
             },

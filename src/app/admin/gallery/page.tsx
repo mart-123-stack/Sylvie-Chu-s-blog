@@ -11,8 +11,13 @@ interface Photo {
   url?: string;
 }
 
+function getAdminToken(): string | null {
+  return localStorage.getItem('adminToken') || localStorage.getItem('token') || null;
+}
+
 export default function AdminGalleryPage() {
   const router = useRouter();
+  const [authed, setAuthed] = useState(false);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [newPhoto, setNewPhoto] = useState({ title: '', category: 'Nature', url: '' });
   const [file, setFile] = useState<File | null>(null);
@@ -23,6 +28,9 @@ export default function AdminGalleryPage() {
   const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
+    const token = getAdminToken();
+    if (!token || !localStorage.getItem('isAdmin')) { router.push('/admin'); return; }
+    setAuthed(true);
     fetchPhotos();
   }, []);
 
@@ -55,7 +63,7 @@ export default function AdminGalleryPage() {
       setUploading(false);
     }
 
-    const token = localStorage.getItem('adminToken');
+    const token = getAdminToken();
     try {
       const updatedPhotos = [...photos, { ...newPhoto, url, id: Date.now().toString() }];
       const response = await fetch('/api/config/photos', {
@@ -85,7 +93,7 @@ export default function AdminGalleryPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this photo?')) return;
 
-    const token = localStorage.getItem('adminToken');
+    const token = getAdminToken();
     const updatedPhotos = photos.filter(p => p.id !== id);
 
     try {
@@ -108,16 +116,16 @@ export default function AdminGalleryPage() {
     }
   };
 
-  if (fetching) {
+  if (!authed || fetching) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-indigo-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-blue-950 flex items-center justify-center">
         <p className="text-sky-900 dark:text-white">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-indigo-950">
+    <div className="min-h-screen bg-gradient-to-b from-sky-100 to-blue-100 dark:from-sky-950 dark:to-blue-950">
       <nav className="bg-white dark:bg-sky-950 shadow-sm border-b border-sky-100 dark:border-sky-900">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
